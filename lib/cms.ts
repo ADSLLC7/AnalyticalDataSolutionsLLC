@@ -165,12 +165,22 @@ async function ensureDataDir() {
   await fs.mkdir(UPLOADS_DIR, { recursive: true });
 }
 
+// Private blobs require the read-write token as a bearer credential even to
+// fetch the URL back; head()/put() return a real URL either way, but a plain
+// unauthenticated fetch() to it 403s on a private-mode store.
+async function fetchBlob(url: string): Promise<Response> {
+  return fetch(url, {
+    cache: "no-store",
+    headers: { Authorization: `Bearer ${process.env.BLOB_READ_WRITE_TOKEN}` },
+  });
+}
+
 async function readStore<T>(file: string, fallback: T): Promise<T> {
   if (useBlob) {
     const { head } = await import("@vercel/blob");
     try {
       const meta = await head(`${STORE_PREFIX}/${file}`);
-      const res = await fetch(meta.url, { cache: "no-store" });
+      const res = await fetchBlob(meta.url);
       if (!res.ok) return fallback;
       return (await res.json()) as T;
     } catch {
@@ -191,7 +201,7 @@ async function writeStore<T>(file: string, data: T): Promise<void> {
   if (useBlob) {
     const { put } = await import("@vercel/blob");
     await put(`${STORE_PREFIX}/${file}`, JSON.stringify(data), {
-      access: "public",
+      access: "private",
       addRandomSuffix: false,
       allowOverwrite: true,
       contentType: "application/json",
@@ -214,7 +224,7 @@ export async function saveResumeFile(
   if (useBlob) {
     const { put } = await import("@vercel/blob");
     const blob = await put(`resumes/${safeName}`, buffer, {
-      access: "public",
+      access: "private",
       contentType,
     });
     return blob.url;
@@ -227,7 +237,7 @@ export async function saveResumeFile(
 export async function readResumeFile(ref: string): Promise<Buffer | null> {
   try {
     if (ref.startsWith("http")) {
-      const res = await fetch(ref, { cache: "no-store" });
+      const res = await fetchBlob(ref);
       if (!res.ok) return null;
       return Buffer.from(await res.arrayBuffer());
     }
