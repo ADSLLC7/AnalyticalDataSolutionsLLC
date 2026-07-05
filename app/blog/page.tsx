@@ -21,7 +21,7 @@ export default async function BlogPage() {
       <SiteNav />
 
       <main>
-        <section className="mk-section" style={{ paddingBottom: 'clamp(2rem, 4vw, 3rem)' }}>
+        <section style={{ paddingBlock: 'clamp(2.5rem, 5vw, 3.5rem) clamp(1.5rem, 3vw, 2rem)' }}>
           <div className="mk-container">
             <h1 className="mk-h1 hero-line" style={{ fontSize: 'clamp(2.25rem, 4.5vw, 3.5rem)' }}>
               Blog
@@ -64,18 +64,6 @@ export default async function BlogPage() {
                 )}
               </div>
             </div>
-          </div>
-        </section>
-
-        {/* Header image */}
-        <section style={{ paddingBottom: 'clamp(2rem, 4vw, 3rem)' }}>
-          <div className="mk-container">
-            <img
-              src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=1600&q=80"
-              alt="Analyst's desk with a laptop showing charts beside handwritten notes"
-              loading="lazy"
-              style={{ width: '100%', aspectRatio: '4 / 1', maxHeight: '280px', objectFit: 'cover', borderRadius: '14px', display: 'block' }}
-            />
           </div>
         </section>
 

@@ -84,10 +84,18 @@ export default async function Home() {
 
       <main>
         {/* ── Hero ─────────────────────────────────────── */}
-        <section className="mk-section" style={{ paddingBottom: 'clamp(3rem, 6vw, 5rem)' }}>
+        <section
+          className="mk-section"
+          style={{
+            paddingBottom: 'clamp(3rem, 6vw, 5rem)',
+            minHeight: 'calc(100dvh - 70px)',
+            display: 'flex',
+            alignItems: 'center',
+          }}
+        >
           <div className="mk-container mk-split">
             <div>
-              <h1 className="mk-h1 hero-line">
+              <h1 className="mk-h1 hero-line" style={{ fontSize: 'clamp(2.75rem, 6.5vw, 5rem)' }}>
                 The IT partner that{' '}
                 <span style={{ color: 'var(--mk-accent)' }}>builds it</span>{' '}
                 with you.

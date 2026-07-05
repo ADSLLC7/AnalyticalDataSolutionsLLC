@@ -21,32 +21,29 @@ export default async function CareersPage() {
       <SiteNav />
 
       <main>
-        <section className="mk-section" style={{ paddingBottom: 'clamp(2rem, 4vw, 3rem)' }}>
-          <div className="mk-container">
-            <h1 className="mk-h1 hero-line" style={{ fontSize: 'clamp(2.25rem, 4.5vw, 3.5rem)' }}>
-              Careers
-            </h1>
-            <p className="mk-lead hero-line" style={{ marginTop: '1.25rem' }}>
-              Build your career at Analytical Data Solutions LLC: real
-              projects, direct mentorship, and clients who build things. Every
-              application gets a human read; if it&apos;s a fit, you hear from
-              us within a week.
-            </p>
-            <p className="mk-body hero-line" style={{ marginTop: '1rem', fontSize: '0.9rem' }}>
-              HR, onboarding, timesheets, and immigration compliance are
-              managed through OnBlick, so your paperwork is never the thing
-              holding you up.
-            </p>
-          </div>
-        </section>
-
-        <section style={{ paddingBottom: 'clamp(2.5rem, 5vw, 4rem)' }}>
-          <div className="mk-container">
+        <section style={{ paddingBlock: 'clamp(2.5rem, 5vw, 4rem)' }}>
+          <div className="mk-container mk-split" style={{ alignItems: 'center' }}>
+            <div>
+              <h1 className="mk-h1 hero-line" style={{ fontSize: 'clamp(2.25rem, 4.5vw, 3.5rem)' }}>
+                Careers
+              </h1>
+              <p className="mk-lead hero-line" style={{ marginTop: '1.25rem' }}>
+                Build your career at Analytical Data Solutions LLC: real
+                projects, direct mentorship, and clients who build things.
+                Every application gets a human read; if it&apos;s a fit, you
+                hear from us within a week.
+              </p>
+              <p className="mk-body hero-line" style={{ marginTop: '1rem', fontSize: '0.9rem' }}>
+                HR, onboarding, timesheets, and immigration compliance are
+                managed through OnBlick, so your paperwork is never the thing
+                holding you up.
+              </p>
+            </div>
             <img
-              src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1600&q=80"
+              className="hero-line"
+              src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1000&q=80"
               alt="Team members working together at a shared table, laptops open"
-              loading="lazy"
-              style={{ width: '100%', aspectRatio: '4 / 1', maxHeight: '280px', objectFit: 'cover', borderRadius: '14px', display: 'block' }}
+              style={{ width: '100%', aspectRatio: '3 / 2', maxHeight: '340px', objectFit: 'cover', borderRadius: '14px', display: 'block' }}
             />
           </div>
         </section>

@@ -54,19 +54,19 @@ export default function AboutPage() {
 
       <main>
         {/* Intro */}
-        <section className="mk-section">
-          <div className="mk-container mk-split-narrow">
-            <h1 className="mk-h1 hero-line" style={{ fontSize: 'clamp(2.25rem, 4.5vw, 3.5rem)' }}>
-              About us
-            </h1>
-            <div className="hero-line">
-              <p className="mk-lead">
+        <section style={{ paddingBlock: 'clamp(2.5rem, 5vw, 4rem)' }}>
+          <div className="mk-container mk-split" style={{ alignItems: 'center' }}>
+            <div>
+              <h1 className="mk-h1 hero-line" style={{ fontSize: 'clamp(2.25rem, 4.5vw, 3.5rem)' }}>
+                About us
+              </h1>
+              <p className="mk-lead hero-line" style={{ marginTop: '1.25rem' }}>
                 Analytical Data Solutions LLC is an IT consulting and technical
                 staffing firm based in Plano, Texas. We work with
                 mid-market companies and growth-stage startups whose technology
                 has outgrown the way it was built.
               </p>
-              <p className="mk-body" style={{ marginTop: '1.25rem' }}>
+              <p className="mk-body hero-line" style={{ marginTop: '1.25rem' }}>
                 Our clients usually come to us at an inflection point: a cloud
                 bill that stopped making sense, a data stack held together by
                 exports and goodwill, a platform that one engineer understands,
@@ -75,17 +75,11 @@ export default function AboutPage() {
                 engineering and the people.
               </p>
             </div>
-          </div>
-        </section>
-
-        {/* Team photo */}
-        <section style={{ paddingBottom: 'clamp(3rem, 6vw, 5rem)' }}>
-          <div className="mk-container">
             <img
-              src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1600&q=80"
+              className="hero-line"
+              src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1000&q=80"
               alt="Engineers collaborating around laptops during a working session"
-              loading="lazy"
-              style={{ width: '100%', aspectRatio: '4 / 1', maxHeight: '280px', objectFit: 'cover', borderRadius: '14px', display: 'block' }}
+              style={{ width: '100%', aspectRatio: '3 / 2', maxHeight: '360px', objectFit: 'cover', borderRadius: '14px', display: 'block' }}
             />
           </div>
         </section>

@@ -15,7 +15,7 @@ export default function ContactPage() {
       <SiteNav />
 
       <main>
-        <section className="mk-section">
+        <section style={{ paddingBlock: 'clamp(2.5rem, 5vw, 4rem)' }}>
           <div className="mk-container mk-split-narrow" style={{ alignItems: 'start' }}>
             <div>
               <h1 className="mk-h1 hero-line" style={{ fontSize: 'clamp(2.25rem, 4.5vw, 3.5rem)' }}>
