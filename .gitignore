@@ -27,6 +27,10 @@ yarn-error.log*
 
 # local env files
 .env*.local
+.env
+
+# local CMS data (jobs, applications, resumes) — never commit real applicant data
+/data/
 
 # vercel
 .vercel
