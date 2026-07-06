@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import {
   Zap, Trash2, History, Copy, Send, Eye,
   CheckCircle, Plus, X,
@@ -12,6 +12,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { ActivityLog } from "@/lib/mock-data";
 import { UserSession } from "@/lib/session";
 import { getRecruiterByEmail } from "@/lib/recruiters";
+import { extractRole, extractName, extractEmail } from "@/lib/jd-extract";
+import type { CcRule } from "@/lib/cms";
 
 interface Panel1Props {
   session: UserSession;
@@ -44,6 +46,31 @@ export default function Panel1JD({ session, onLog }: Panel1Props) {
     "ML Scientist @ FinanceCo — sent yesterday",
   ]);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [ccRules, setCcRules] = useState<CcRule[]>([]);
+
+  const loadCcRules = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/cc-rules?email=${encodeURIComponent(session.email)}`);
+      if (res.ok) setCcRules(await res.json());
+    } catch {
+      /* CC auto-fill is a convenience; ignore load failures */
+    }
+  }, [session.email]);
+
+  useEffect(() => {
+    loadCcRules();
+  }, [loadCcRules]);
+
+  // First rule whose comma-separated keywords appear in the JD text or the
+  // detected role wins; recruiters manage this list themselves (Panel2).
+  function matchCcRule(text: string): string | null {
+    const lower = text.toLowerCase();
+    for (const rule of ccRules) {
+      const terms = rule.keywords.split(",").map((k) => k.trim().toLowerCase()).filter(Boolean);
+      if (terms.some((t) => lower.includes(t))) return rule.ccEmail;
+    }
+    return null;
+  }
 
   const buildSignature = () => {
     const n = session.name;
@@ -61,44 +88,23 @@ export default function Panel1JD({ session, onLog }: Panel1Props) {
     setProgress(60);
     await new Promise((r) => setTimeout(r, 400));
 
-    // Extract role from JD text using simple heuristics
-    const lower = jd.toLowerCase();
-    const rolePatterns: [RegExp, string][] = [
-      [/dynamics 365|\.net full stack/i, "Microsoft Dynamics 365 & .NET Developer"],
-      [/\.net|dotnet|asp\.net/i, ".NET Developer"],
-      [/data engineer/i, "Data Engineer"],
-      [/data analyst/i, "Data Analyst"],
-      [/business analyst/i, "Business Analyst"],
-      [/network engineer|cisco|ccna/i, "Network Engineer"],
-      [/devops|kubernetes|terraform/i, "DevOps Engineer"],
-      [/golang|go developer/i, "Golang Developer"],
-      [/cyber|security analyst|infosec/i, "Security Analyst"],
-      [/power bi|tableau|snowflake/i, "BI / Analytics Engineer"],
-      [/java\b/i, "Java Developer"],
-      [/python/i, "Python Developer"],
-      [/react|frontend|front-end/i, "Frontend Developer"],
-      [/node\.?js|backend/i, "Backend Developer"],
-      [/scrum master|product owner/i, "Scrum Master / PM"],
-      [/aws|azure|gcp|cloud/i, "Cloud Engineer"],
-      [/salesforce/i, "Salesforce Developer"],
-      [/workday/i, "Workday Consultant"],
-    ];
+    // Extract role and recruiter name/email from the JD text.
+    const role = extractRole(jd) || "Technology Professional";
 
-    let role = "Technology Professional";
-    for (const [pat, label] of rolePatterns) {
-      if (pat.test(lower)) { role = label; break; }
+    const extractedEmail = extractEmail(jd);
+    if (extractedEmail && !recruiterEmail) {
+      setRecruiterEmail(extractedEmail);
     }
 
-    // Extract recruiter email if not set
-    const emailMatch = jd.match(/\b[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[a-z]{2,}\b/);
-    if (emailMatch && !recruiterEmail) {
-      setRecruiterEmail(emailMatch[0]);
+    const extractedName = extractName(jd);
+    if (extractedName && !recruiterName) {
+      setRecruiterName(extractedName);
     }
 
-    // Auto-detect CC from recruiter profile
-    const cc = profile ? profile.getCCForRole(role) : "";
-    const ccEmails = cc ? cc.split(",").map(e => e.trim()).filter(Boolean) : [];
-    setCcList(ccEmails);
+    // Auto-fill CC from the recruiter's own saved tech-stack rules (Panel2).
+    // Only one CC is populated automatically; recruiters can still add more.
+    const matched = matchCcRule(`${role} ${jd}`);
+    setCcList(matched ? [matched] : []);
     setDetectedRole(role);
 
     // Build and compile template
@@ -107,7 +113,7 @@ export default function Panel1JD({ session, onLog }: Panel1Props) {
       : (profile?.inquiryTemplate ?? "Hi {{recruiterName}},\n\n{{signature}}\n\n---\nJob Description:\n\n{{jd}}");
 
     const compiled = tpl
-      .replace(/\{\{recruiterName\}\}/g, recruiterName || "[Recruiter Name]")
+      .replace(/\{\{recruiterName\}\}/g, recruiterName || extractedName || "[Recruiter Name]")
       .replace(/\{\{role\}\}/g, role)
       .replace(/\{\{signature\}\}/g, buildSignature())
       .replace(/\{\{jd\}\}/g, jd.trim());

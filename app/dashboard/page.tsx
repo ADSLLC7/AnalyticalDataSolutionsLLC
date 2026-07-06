@@ -135,7 +135,7 @@ export default function DashboardPage() {
             <>
               <Panel defaultSize={25} minSize={18} id="panel2">
                 <div className="relative h-full border-r border-border">
-                  <Panel2Routing emailsSent={emailsSent} lastSentTo={lastSentTo} />
+                  <Panel2Routing session={session} emailsSent={emailsSent} lastSentTo={lastSentTo} />
                   <CollapseButton id="p2" label="CC Routing" />
                 </div>
               </Panel>

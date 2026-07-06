@@ -322,6 +322,51 @@ export async function deletePost(slug: string): Promise<void> {
   await writeStore("posts.json", posts);
 }
 
+/* ── Recruiter CC routing rules ───────────────────────────── */
+// Each recruiter maintains their own tech-stack → CC-email rules, used to
+// auto-populate the CC field when a JD is extracted. Replaces the old
+// hardcoded role→consultant table.
+
+export type CcRule = {
+  id: string;
+  keywords: string; // comma-separated tech-stack terms, matched case-insensitively
+  ccEmail: string;
+  createdAt: string;
+};
+
+async function getAllCcRules(): Promise<Record<string, CcRule[]>> {
+  return readStore<Record<string, CcRule[]>>("cc-rules.json", {});
+}
+
+export async function getCcRules(recruiterEmail: string): Promise<CcRule[]> {
+  const all = await getAllCcRules();
+  return all[recruiterEmail.toLowerCase()] || [];
+}
+
+export async function saveCcRule(
+  recruiterEmail: string,
+  rule: CcRule
+): Promise<void> {
+  const all = await getAllCcRules();
+  const key = recruiterEmail.toLowerCase();
+  const list = all[key] || [];
+  const idx = list.findIndex((r) => r.id === rule.id);
+  if (idx >= 0) list[idx] = rule;
+  else list.unshift(rule);
+  all[key] = list;
+  await writeStore("cc-rules.json", all);
+}
+
+export async function deleteCcRule(
+  recruiterEmail: string,
+  ruleId: string
+): Promise<void> {
+  const all = await getAllCcRules();
+  const key = recruiterEmail.toLowerCase();
+  all[key] = (all[key] || []).filter((r) => r.id !== ruleId);
+  await writeStore("cc-rules.json", all);
+}
+
 /* ── Login OTPs ───────────────────────────────────────────── */
 
 export type OtpRecord = {

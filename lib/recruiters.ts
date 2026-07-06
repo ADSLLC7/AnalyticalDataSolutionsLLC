@@ -48,7 +48,10 @@ const siva: RecruiterProfile = {
   phone: "+1(469)885-7854",
   title: "Sr Bench Sales",
   recruiterId: "recruiter_1",
-  webhookUrl: "http://localhost:5678/webhook/recruiter-outreach",
+  // A bare localhost URL can never be reached from a deployed site (the
+  // browser making the request has no route to the recruiter's own machine).
+  // Use the shared tunnel by default; JD_WEBHOOK_URL env overrides this.
+  webhookUrl: NGROK_WEBHOOK,
   getCCForRole(role) {
     const r = role.toLowerCase();
     if (/\.net|dotnet|asp\.net|c#|blazor|wpf/.test(r) && !/dynamics/.test(r))
