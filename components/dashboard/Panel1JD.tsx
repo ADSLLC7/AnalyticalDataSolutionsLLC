@@ -214,6 +214,7 @@ export default function Panel1JD({
       const rule = ccRules.find((r) => r.ccEmail.toLowerCase() === email.toLowerCase());
       return {
         email,
+        name: rule?.consultantName || null,
         fileId: rule?.driveFileId || null,
         hasResume: !!rule?.driveFileId,
       };

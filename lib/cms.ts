@@ -329,6 +329,7 @@ export async function deletePost(slug: string): Promise<void> {
 
 export type CcRule = {
   id: string;
+  consultantName?: string; // display name, e.g. "Arun Sharma"
   keywords: string; // comma-separated tech-stack terms, matched case-insensitively
   ccEmail: string;
   // Google Drive file ID for this consultant's resume, so the n8n

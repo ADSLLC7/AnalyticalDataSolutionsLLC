@@ -9,13 +9,21 @@ import { getCcRules, saveCcRule, type CcRule } from "@/lib/cms";
 
 // Accepts either a bare Drive file ID or a full share URL
 // (https://drive.google.com/file/d/<ID>/view, ?id=<ID>, /open?id=<ID>).
-function extractDriveFileId(input: string): string {
+// Folder links are rejected: n8n downloads a single file by ID, so a folder
+// URL silently can't work — share the resume file itself instead.
+function extractDriveFileId(input: string): { fileId?: string; error?: string } {
   const trimmed = input.trim();
-  if (!trimmed) return "";
+  if (!trimmed) return {};
+  if (/\/folders\//.test(trimmed)) {
+    return {
+      error:
+        "That's a Drive folder link, not a file link. Open the resume file itself in Drive, click Share, and paste that file's link instead.",
+    };
+  }
   const m =
     trimmed.match(/\/file\/d\/([a-zA-Z0-9_-]{10,})/) ||
     trimmed.match(/[?&]id=([a-zA-Z0-9_-]{10,})/);
-  return m ? m[1] : trimmed;
+  return { fileId: m ? m[1] : trimmed };
 }
 
 export async function GET(req: NextRequest) {
@@ -44,10 +52,16 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "That CC email doesn't look valid." }, { status: 400 });
   }
 
-  const driveFileId = extractDriveFileId(String(body.driveFileId || ""));
+  const { fileId: driveFileId, error: driveError } = extractDriveFileId(String(body.driveFileId || ""));
+  if (driveError) {
+    return NextResponse.json({ error: driveError }, { status: 400 });
+  }
+
+  const consultantName = String(body.consultantName || "").trim();
 
   const rule: CcRule = {
     id: body.id || `cc-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`,
+    ...(consultantName ? { consultantName } : {}),
     keywords,
     ccEmail,
     ...(driveFileId ? { driveFileId } : {}),

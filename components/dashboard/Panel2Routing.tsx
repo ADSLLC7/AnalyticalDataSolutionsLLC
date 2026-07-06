@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState, type Dispatch, type SetStateAction } from "react";
-import { Plus, Trash2, Pencil, Check, X, Tags, Wand2 } from "lucide-react";
+import { Plus, Trash2, Pencil, Check, X, Tags, Wand2, UserPlus } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { UserSession } from "@/lib/session";
@@ -20,16 +20,19 @@ interface Panel2Props {
 export default function Panel2Routing({ session, emailsSent, lastSentTo, jd, detectedRole, setCcList, onRulesChanged }: Panel2Props) {
   const [rules, setRules] = useState<CcRule[]>([]);
   const [loading, setLoading] = useState(true);
+  const [consultantName, setConsultantName] = useState("");
   const [keywords, setKeywords] = useState("");
   const [ccEmail, setCcEmail] = useState("");
   const [driveFileId, setDriveFileId] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [editName, setEditName] = useState("");
   const [editKeywords, setEditKeywords] = useState("");
   const [editCc, setEditCc] = useState("");
   const [editDriveFileId, setEditDriveFileId] = useState("");
   const [matchResult, setMatchResult] = useState("");
+  const [addedFeedback, setAddedFeedback] = useState("");
 
   const load = useCallback(async () => {
     const res = await fetch(`/api/cc-rules?email=${encodeURIComponent(session.email)}`);
@@ -50,6 +53,7 @@ export default function Panel2Routing({ session, emailsSent, lastSentTo, jd, det
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         email: session.email,
+        consultantName: consultantName.trim(),
         keywords: keywords.trim(),
         ccEmail: ccEmail.trim(),
         driveFileId: driveFileId.trim(),
@@ -61,6 +65,7 @@ export default function Panel2Routing({ session, emailsSent, lastSentTo, jd, det
       setError(json.error || "Could not save that rule.");
       return;
     }
+    setConsultantName("");
     setKeywords("");
     setCcEmail("");
     setDriveFileId("");
@@ -70,9 +75,11 @@ export default function Panel2Routing({ session, emailsSent, lastSentTo, jd, det
 
   function startEdit(rule: CcRule) {
     setEditingId(rule.id);
+    setEditName(rule.consultantName || "");
     setEditKeywords(rule.keywords);
     setEditCc(rule.ccEmail);
     setEditDriveFileId(rule.driveFileId || "");
+    setError("");
   }
 
   async function saveEdit(rule: CcRule) {
@@ -83,6 +90,7 @@ export default function Panel2Routing({ session, emailsSent, lastSentTo, jd, det
       body: JSON.stringify({
         email: session.email,
         id: rule.id,
+        consultantName: editName.trim(),
         keywords: editKeywords.trim(),
         ccEmail: editCc.trim(),
         driveFileId: editDriveFileId.trim(),
@@ -91,9 +99,19 @@ export default function Panel2Routing({ session, emailsSent, lastSentTo, jd, det
     });
     if (res.ok) {
       setEditingId(null);
+      setError("");
       await load();
       onRulesChanged();
+    } else {
+      const json = await res.json().catch(() => ({}));
+      setError(json.error || "Could not save that rule.");
     }
+  }
+
+  function addToCc(email: string) {
+    setCcList((prev) => (prev.includes(email) ? prev : [...prev, email]));
+    setAddedFeedback(`Added ${email} to CC.`);
+    setTimeout(() => setAddedFeedback(""), 2000);
   }
 
   async function removeRule(id: string) {
@@ -153,6 +171,9 @@ export default function Panel2Routing({ session, emailsSent, lastSentTo, jd, det
           {matchResult && (
             <p className="text-[10px] text-muted-foreground mb-2 leading-relaxed">{matchResult}</p>
           )}
+          {addedFeedback && (
+            <p className="text-[10px] text-emerald-600 mb-2 leading-relaxed">{addedFeedback}</p>
+          )}
 
           {loading ? (
             <p className="text-[10px] text-muted-foreground">Loading…</p>
@@ -166,6 +187,12 @@ export default function Panel2Routing({ session, emailsSent, lastSentTo, jd, det
                 <div key={r.id} className="border border-border rounded-md p-2 bg-card">
                   {editingId === r.id ? (
                     <div className="space-y-1.5">
+                      <Input
+                        value={editName}
+                        onChange={(e) => setEditName(e.target.value)}
+                        placeholder="Consultant name (optional)"
+                        className="h-7 text-[11px]"
+                      />
                       <Input
                         value={editKeywords}
                         onChange={(e) => setEditKeywords(e.target.value)}
@@ -181,9 +208,10 @@ export default function Panel2Routing({ session, emailsSent, lastSentTo, jd, det
                       <Input
                         value={editDriveFileId}
                         onChange={(e) => setEditDriveFileId(e.target.value)}
-                        placeholder="Google Drive resume link or file ID (optional)"
+                        placeholder="Resume file link or ID (optional)"
                         className="h-7 text-[11px]"
                       />
+                      {error && <p className="text-[10px] text-destructive">{error}</p>}
                       <div className="flex gap-1">
                         <Button size="sm" className="h-6 text-[10px] px-2 gap-1" onClick={() => saveEdit(r)}>
                           <Check className="w-2.5 h-2.5" /> Save
@@ -192,7 +220,7 @@ export default function Panel2Routing({ session, emailsSent, lastSentTo, jd, det
                           size="sm"
                           variant="ghost"
                           className="h-6 text-[10px] px-2 gap-1"
-                          onClick={() => setEditingId(null)}
+                          onClick={() => { setEditingId(null); setError(""); }}
                         >
                           <X className="w-2.5 h-2.5" /> Cancel
                         </Button>
@@ -201,16 +229,25 @@ export default function Panel2Routing({ session, emailsSent, lastSentTo, jd, det
                   ) : (
                     <div className="flex items-start gap-2">
                       <div className="flex-1 min-w-0">
-                        <div className="text-[11px] font-medium text-foreground truncate">
-                          {r.keywords}
+                        <div className="text-[11px] font-semibold text-foreground truncate">
+                          {r.consultantName || r.ccEmail}
                         </div>
-                        <div className="text-[10px] text-muted-foreground truncate">{r.ccEmail}</div>
+                        <div className="text-[10px] text-muted-foreground truncate">{r.keywords}</div>
+                        <div className="text-[10px] text-muted-foreground/80 truncate">{r.ccEmail}</div>
                         {r.driveFileId && (
-                          <div className="text-[9px] text-muted-foreground/70 truncate mt-0.5">
+                          <div className="text-[9px] text-emerald-600/80 truncate mt-0.5">
                             Resume linked
                           </div>
                         )}
                       </div>
+                      <button
+                        className="text-muted-foreground hover:text-emerald-600 shrink-0"
+                        onClick={() => addToCc(r.ccEmail)}
+                        aria-label={`Add ${r.ccEmail} to CC`}
+                        title="Add to CC"
+                      >
+                        <UserPlus className="w-3 h-3" />
+                      </button>
                       <button
                         className="text-muted-foreground hover:text-foreground shrink-0"
                         onClick={() => startEdit(r)}
@@ -234,6 +271,12 @@ export default function Panel2Routing({ session, emailsSent, lastSentTo, jd, det
 
           {/* Add new rule */}
           <div className="mt-2 space-y-1.5 border-t border-border pt-2">
+            <Input
+              value={consultantName}
+              onChange={(e) => setConsultantName(e.target.value)}
+              placeholder="Consultant name (optional)"
+              className="h-7 text-[11px]"
+            />
             <Input
               value={keywords}
               onChange={(e) => setKeywords(e.target.value)}
