@@ -331,6 +331,9 @@ export type CcRule = {
   id: string;
   keywords: string; // comma-separated tech-stack terms, matched case-insensitively
   ccEmail: string;
+  // Google Drive file ID for this consultant's resume, so the n8n
+  // resume-matching flow can look it up without a hardcoded map.
+  driveFileId?: string;
   createdAt: string;
 };
 

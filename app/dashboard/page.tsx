@@ -31,6 +31,9 @@ export default function DashboardPage() {
   const [jd, setJd] = useState("");
   const [detectedRole, setDetectedRole] = useState("");
   const [ccList, setCcList] = useState<string[]>([]);
+  // Bumped whenever Panel2 adds/edits/deletes a CC rule so Panel1 refetches
+  // its own copy (used to attach each consultant's resume file ID on send).
+  const [ccRulesVersion, setCcRulesVersion] = useState(0);
 
   useEffect(() => {
     const s = getSession();
@@ -139,6 +142,7 @@ export default function DashboardPage() {
                     setDetectedRole={setDetectedRole}
                     ccList={ccList}
                     setCcList={setCcList}
+                    ccRulesVersion={ccRulesVersion}
                   />
                   <CollapseButton id="p1" label="JD & Outreach" />
                 </div>
@@ -158,6 +162,7 @@ export default function DashboardPage() {
                     jd={jd}
                     detectedRole={detectedRole}
                     setCcList={setCcList}
+                    onRulesChanged={() => setCcRulesVersion((v) => v + 1)}
                   />
                   <CollapseButton id="p2" label="CC Routing" />
                 </div>

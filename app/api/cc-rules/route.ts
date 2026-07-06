@@ -7,6 +7,17 @@ import { getCcRules, saveCcRule, type CcRule } from "@/lib/cms";
 // no separate admin concern here, since a recruiter can only ever read or
 // write their own CC rules, keyed by their own email.
 
+// Accepts either a bare Drive file ID or a full share URL
+// (https://drive.google.com/file/d/<ID>/view, ?id=<ID>, /open?id=<ID>).
+function extractDriveFileId(input: string): string {
+  const trimmed = input.trim();
+  if (!trimmed) return "";
+  const m =
+    trimmed.match(/\/file\/d\/([a-zA-Z0-9_-]{10,})/) ||
+    trimmed.match(/[?&]id=([a-zA-Z0-9_-]{10,})/);
+  return m ? m[1] : trimmed;
+}
+
 export async function GET(req: NextRequest) {
   const email = req.nextUrl.searchParams.get("email") || "";
   if (!getRecruiterByEmail(email)) {
@@ -33,10 +44,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "That CC email doesn't look valid." }, { status: 400 });
   }
 
+  const driveFileId = extractDriveFileId(String(body.driveFileId || ""));
+
   const rule: CcRule = {
     id: body.id || `cc-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`,
     keywords,
     ccEmail,
+    ...(driveFileId ? { driveFileId } : {}),
     createdAt: body.createdAt || new Date().toISOString(),
   };
   await saveCcRule(email, rule);

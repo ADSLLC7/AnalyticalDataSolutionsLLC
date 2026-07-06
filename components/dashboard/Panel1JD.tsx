@@ -24,6 +24,7 @@ interface Panel1Props {
   setDetectedRole: Dispatch<SetStateAction<string>>;
   ccList: string[];
   setCcList: Dispatch<SetStateAction<string[]>>;
+  ccRulesVersion: number;
 }
 
 type EmailMode = "submit" | "inquiry";
@@ -65,6 +66,7 @@ export default function Panel1JD({
   setDetectedRole,
   ccList,
   setCcList,
+  ccRulesVersion,
 }: Panel1Props) {
   const profile = getRecruiterByEmail(session.email);
 
@@ -101,7 +103,7 @@ export default function Panel1JD({
 
   useEffect(() => {
     loadCcRules();
-  }, [loadCcRules]);
+  }, [loadCcRules, ccRulesVersion]);
 
   // First rule whose comma-separated keywords appear in the JD text or the
   // detected role wins; recruiters manage this list themselves (Panel2).
@@ -205,6 +207,18 @@ export default function Panel1JD({
       return;
     }
 
+    // Carry each CC'd consultant's Drive resume file ID (set in the CC
+    // Routing panel) so n8n's resume-matching flow no longer needs its own
+    // hardcoded email->fileId map — new consultants only need adding here.
+    const consultants = ccList.map((email) => {
+      const rule = ccRules.find((r) => r.ccEmail.toLowerCase() === email.toLowerCase());
+      return {
+        email,
+        fileId: rule?.driveFileId || null,
+        hasResume: !!rule?.driveFileId,
+      };
+    });
+
     const payload = {
       email: recruiterEmail,
       name: recruiterName,
@@ -215,6 +229,7 @@ export default function Panel1JD({
       mode,
       cc: ccList.join(","),
       recruiter_id: session.recruiterId,
+      consultants,
     };
 
     try {

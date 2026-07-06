@@ -14,18 +14,21 @@ interface Panel2Props {
   jd: string;
   detectedRole: string;
   setCcList: Dispatch<SetStateAction<string[]>>;
+  onRulesChanged: () => void;
 }
 
-export default function Panel2Routing({ session, emailsSent, lastSentTo, jd, detectedRole, setCcList }: Panel2Props) {
+export default function Panel2Routing({ session, emailsSent, lastSentTo, jd, detectedRole, setCcList, onRulesChanged }: Panel2Props) {
   const [rules, setRules] = useState<CcRule[]>([]);
   const [loading, setLoading] = useState(true);
   const [keywords, setKeywords] = useState("");
   const [ccEmail, setCcEmail] = useState("");
+  const [driveFileId, setDriveFileId] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editKeywords, setEditKeywords] = useState("");
   const [editCc, setEditCc] = useState("");
+  const [editDriveFileId, setEditDriveFileId] = useState("");
   const [matchResult, setMatchResult] = useState("");
 
   const load = useCallback(async () => {
@@ -45,7 +48,12 @@ export default function Panel2Routing({ session, emailsSent, lastSentTo, jd, det
     const res = await fetch("/api/cc-rules", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: session.email, keywords: keywords.trim(), ccEmail: ccEmail.trim() }),
+      body: JSON.stringify({
+        email: session.email,
+        keywords: keywords.trim(),
+        ccEmail: ccEmail.trim(),
+        driveFileId: driveFileId.trim(),
+      }),
     });
     setSaving(false);
     if (!res.ok) {
@@ -55,13 +63,16 @@ export default function Panel2Routing({ session, emailsSent, lastSentTo, jd, det
     }
     setKeywords("");
     setCcEmail("");
+    setDriveFileId("");
     await load();
+    onRulesChanged();
   }
 
   function startEdit(rule: CcRule) {
     setEditingId(rule.id);
     setEditKeywords(rule.keywords);
     setEditCc(rule.ccEmail);
+    setEditDriveFileId(rule.driveFileId || "");
   }
 
   async function saveEdit(rule: CcRule) {
@@ -74,18 +85,21 @@ export default function Panel2Routing({ session, emailsSent, lastSentTo, jd, det
         id: rule.id,
         keywords: editKeywords.trim(),
         ccEmail: editCc.trim(),
+        driveFileId: editDriveFileId.trim(),
         createdAt: rule.createdAt,
       }),
     });
     if (res.ok) {
       setEditingId(null);
       await load();
+      onRulesChanged();
     }
   }
 
   async function removeRule(id: string) {
     await fetch(`/api/cc-rules/${id}?email=${encodeURIComponent(session.email)}`, { method: "DELETE" });
     await load();
+    onRulesChanged();
   }
 
   function populateCc() {
@@ -164,6 +178,12 @@ export default function Panel2Routing({ session, emailsSent, lastSentTo, jd, det
                         placeholder="cc@example.com"
                         className="h-7 text-[11px]"
                       />
+                      <Input
+                        value={editDriveFileId}
+                        onChange={(e) => setEditDriveFileId(e.target.value)}
+                        placeholder="Google Drive resume link or file ID (optional)"
+                        className="h-7 text-[11px]"
+                      />
                       <div className="flex gap-1">
                         <Button size="sm" className="h-6 text-[10px] px-2 gap-1" onClick={() => saveEdit(r)}>
                           <Check className="w-2.5 h-2.5" /> Save
@@ -185,6 +205,11 @@ export default function Panel2Routing({ session, emailsSent, lastSentTo, jd, det
                           {r.keywords}
                         </div>
                         <div className="text-[10px] text-muted-foreground truncate">{r.ccEmail}</div>
+                        {r.driveFileId && (
+                          <div className="text-[9px] text-muted-foreground/70 truncate mt-0.5">
+                            Resume linked
+                          </div>
+                        )}
                       </div>
                       <button
                         className="text-muted-foreground hover:text-foreground shrink-0"
@@ -215,11 +240,17 @@ export default function Panel2Routing({ session, emailsSent, lastSentTo, jd, det
               placeholder="Tech stack, e.g. .net, c#, blazor"
               className="h-7 text-[11px]"
             />
+            <Input
+              value={ccEmail}
+              onChange={(e) => setCcEmail(e.target.value)}
+              placeholder="cc@example.com"
+              className="h-7 text-[11px]"
+            />
             <div className="flex gap-1.5">
               <Input
-                value={ccEmail}
-                onChange={(e) => setCcEmail(e.target.value)}
-                placeholder="cc@example.com"
+                value={driveFileId}
+                onChange={(e) => setDriveFileId(e.target.value)}
+                placeholder="Resume: Drive link or file ID (optional)"
                 className="h-7 text-[11px] flex-1"
                 onKeyDown={(e) => e.key === "Enter" && addRule()}
               />
