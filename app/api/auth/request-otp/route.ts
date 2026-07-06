@@ -2,32 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { createHash, randomInt } from "crypto";
 import { getRecruiterByEmail } from "@/lib/recruiters";
 import { saveOtp } from "@/lib/cms";
+import { sendOtpEmail } from "@/lib/mailer";
 
 const OTP_TTL_MS = 10 * 60 * 1000; // 10 minutes
 
 function hash(code: string): string {
   return createHash("sha256").update(code).digest("hex");
-}
-
-async function sendOtpEmail(to: string, code: string): Promise<boolean> {
-  const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey) return false;
-  const from =
-    process.env.OTP_FROM_EMAIL || "portal@analyticaldatasolution.com";
-  const res = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      from: `ADS Recruiter Portal <${from}>`,
-      to: [to],
-      subject: `Your ADS portal sign-in code: ${code}`,
-      text: `Your one-time sign-in code for the ADS Recruiter Portal is:\n\n${code}\n\nIt expires in 10 minutes. If you didn't request this, you can ignore this email.`,
-    }),
-  });
-  return res.ok;
 }
 
 export async function POST(req: NextRequest) {
