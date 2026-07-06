@@ -45,32 +45,40 @@ export default function Panel2Routing({ session, emailsSent, lastSentTo, jd, det
   }, [load]);
 
   async function addRule() {
-    if (!keywords.trim() || !ccEmail.trim()) return;
-    setSaving(true);
     setError("");
-    const res = await fetch("/api/cc-rules", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        email: session.email,
-        consultantName: consultantName.trim(),
-        keywords: keywords.trim(),
-        ccEmail: ccEmail.trim(),
-        driveFileId: driveFileId.trim(),
-      }),
-    });
-    setSaving(false);
-    if (!res.ok) {
-      const json = await res.json().catch(() => ({}));
-      setError(json.error || "Could not save that rule.");
+    if (!keywords.trim() || !ccEmail.trim()) {
+      setError("Tech stack keywords and a CC email are both required.");
       return;
     }
-    setConsultantName("");
-    setKeywords("");
-    setCcEmail("");
-    setDriveFileId("");
-    await load();
-    onRulesChanged();
+    setSaving(true);
+    try {
+      const res = await fetch("/api/cc-rules", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: session.email,
+          consultantName: consultantName.trim(),
+          keywords: keywords.trim(),
+          ccEmail: ccEmail.trim(),
+          driveFileId: driveFileId.trim(),
+        }),
+      });
+      if (!res.ok) {
+        const json = await res.json().catch(() => ({}));
+        setError(json.error || "Could not save that rule.");
+        return;
+      }
+      setConsultantName("");
+      setKeywords("");
+      setCcEmail("");
+      setDriveFileId("");
+      await load();
+      onRulesChanged();
+    } catch {
+      setError("Network error while saving. Check your connection and try again.");
+    } finally {
+      setSaving(false);
+    }
   }
 
   function startEdit(rule: CcRule) {
@@ -83,28 +91,35 @@ export default function Panel2Routing({ session, emailsSent, lastSentTo, jd, det
   }
 
   async function saveEdit(rule: CcRule) {
-    if (!editKeywords.trim() || !editCc.trim()) return;
-    const res = await fetch("/api/cc-rules", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        email: session.email,
-        id: rule.id,
-        consultantName: editName.trim(),
-        keywords: editKeywords.trim(),
-        ccEmail: editCc.trim(),
-        driveFileId: editDriveFileId.trim(),
-        createdAt: rule.createdAt,
-      }),
-    });
-    if (res.ok) {
-      setEditingId(null);
-      setError("");
-      await load();
-      onRulesChanged();
-    } else {
-      const json = await res.json().catch(() => ({}));
-      setError(json.error || "Could not save that rule.");
+    setError("");
+    if (!editKeywords.trim() || !editCc.trim()) {
+      setError("Tech stack keywords and a CC email are both required.");
+      return;
+    }
+    try {
+      const res = await fetch("/api/cc-rules", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: session.email,
+          id: rule.id,
+          consultantName: editName.trim(),
+          keywords: editKeywords.trim(),
+          ccEmail: editCc.trim(),
+          driveFileId: editDriveFileId.trim(),
+          createdAt: rule.createdAt,
+        }),
+      });
+      if (res.ok) {
+        setEditingId(null);
+        await load();
+        onRulesChanged();
+      } else {
+        const json = await res.json().catch(() => ({}));
+        setError(json.error || "Could not save that rule.");
+      }
+    } catch {
+      setError("Network error while saving. Check your connection and try again.");
     }
   }
 
