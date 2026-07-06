@@ -193,23 +193,23 @@ export default function Panel1JD({
     }
   };
 
-  const handleSend = async () => {
+  // The n8n workflow behind the webhook downloads the resume, calls Claude,
+  // and sends the outbound email before it responds — that can take well
+  // over 10 seconds. Waiting for that response before letting the recruiter
+  // move on made the UI feel frozen after every send. Instead: snapshot the
+  // payload, clear the compose form immediately so the next JD can go in
+  // right away, and let the network call resolve in the background —
+  // success or failure lands in the Activity Log and History whenever it
+  // actually finishes.
+  const handleSend = () => {
     if (!message || !recruiterEmail) return;
-    setSending(true);
-    setSendError("");
-    setProgress(10);
 
     const webhookUrl = session.webhookUrl;
     if (!webhookUrl) {
       setSendError("No webhook URL configured for this recruiter.");
-      setSending(false);
-      setProgress(0);
       return;
     }
 
-    // Carry each CC'd consultant's Drive resume file ID (set in the CC
-    // Routing panel) so n8n's resume-matching flow no longer needs its own
-    // hardcoded email->fileId map — new consultants only need adding here.
     const consultants = ccList.map((email) => {
       const rule = ccRules.find((r) => r.ccEmail.toLowerCase() === email.toLowerCase());
       return {
@@ -220,6 +220,7 @@ export default function Panel1JD({
       };
     });
 
+    const snapshot = { recruiterEmail, subject, detectedRole, message, jd, mode, ccList };
     const payload = {
       email: recruiterEmail,
       name: recruiterName,
@@ -233,38 +234,54 @@ export default function Panel1JD({
       consultants,
     };
 
-    try {
-      setProgress(40);
-      const res = await fetch(webhookUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      setProgress(90);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      setProgress(100);
-      onLog({
-        action: "Email sent",
-        detail: `To: ${recruiterEmail} · Subject: ${subject}`,
-        type: "send",
-      });
+    // Reset the compose form now — the recruiter can paste the next JD
+    // immediately instead of waiting on the background request below.
+    setSendError("");
+    setJd("");
+    setDetectedRole("");
+    setMessage("");
+    setSubject("");
+    setCcList([]);
+    setRecruiterName("");
+    setRecruiterEmail("");
+    setRecruiterRole("");
+    setSending(true);
+    setProgress(30);
+    setTimeout(() => setProgress(0), 900);
 
-      const record: SentRecord = {
-        subject,
-        role: detectedRole,
-        to: recruiterEmail,
-        sentAt: new Date().toISOString(),
-      };
-      const updated = [record, ...history].slice(0, HISTORY_LIMIT);
-      setHistory(updated);
-      localStorage.setItem(historyKey(session.email), JSON.stringify(updated));
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : "Unknown error";
-      setSendError(`Send failed: ${msg}`);
-      onLog({ action: "Send failed", detail: msg, type: "info" });
-    } finally {
-      setTimeout(() => { setProgress(0); setSending(false); }, 600);
-    }
+    (async () => {
+      try {
+        const res = await fetch(webhookUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        onLog({
+          action: "Email sent",
+          detail: `To: ${snapshot.recruiterEmail} · Subject: ${snapshot.subject}`,
+          type: "send",
+        });
+
+        const record: SentRecord = {
+          subject: snapshot.subject,
+          role: snapshot.detectedRole,
+          to: snapshot.recruiterEmail,
+          sentAt: new Date().toISOString(),
+        };
+        setHistory((prev) => {
+          const updated = [record, ...prev].slice(0, HISTORY_LIMIT);
+          localStorage.setItem(historyKey(session.email), JSON.stringify(updated));
+          return updated;
+        });
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : "Unknown error";
+        setSendError(`Send to ${snapshot.recruiterEmail} failed: ${msg}`);
+        onLog({ action: "Send failed", detail: `${snapshot.recruiterEmail}: ${msg}`, type: "info" });
+      } finally {
+        setSending(false);
+      }
+    })();
   };
 
   const charCount = message.length;
