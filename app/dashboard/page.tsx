@@ -25,6 +25,13 @@ export default function DashboardPage() {
   const [lastSentTo, setLastSentTo] = useState("");
   const [collapsed, setCollapsed] = useState<Set<PanelId>>(new Set());
 
+  // Shared between Panel1 (JD & Outreach) and Panel2 (CC Routing) so Panel2's
+  // "Populate CC" button can match against the current JD without relying on
+  // Extract Fields having been clicked first.
+  const [jd, setJd] = useState("");
+  const [detectedRole, setDetectedRole] = useState("");
+  const [ccList, setCcList] = useState<string[]>([]);
+
   useEffect(() => {
     const s = getSession();
     if (!s) {
@@ -123,7 +130,16 @@ export default function DashboardPage() {
             <>
               <Panel defaultSize={45} minSize={25} id="panel1">
                 <div className="relative h-full border-r border-border">
-                  <Panel1JD session={session} onLog={handleLog} />
+                  <Panel1JD
+                    session={session}
+                    onLog={handleLog}
+                    jd={jd}
+                    setJd={setJd}
+                    detectedRole={detectedRole}
+                    setDetectedRole={setDetectedRole}
+                    ccList={ccList}
+                    setCcList={setCcList}
+                  />
                   <CollapseButton id="p1" label="JD & Outreach" />
                 </div>
               </Panel>
@@ -135,7 +151,14 @@ export default function DashboardPage() {
             <>
               <Panel defaultSize={25} minSize={18} id="panel2">
                 <div className="relative h-full border-r border-border">
-                  <Panel2Routing session={session} emailsSent={emailsSent} lastSentTo={lastSentTo} />
+                  <Panel2Routing
+                    session={session}
+                    emailsSent={emailsSent}
+                    lastSentTo={lastSentTo}
+                    jd={jd}
+                    detectedRole={detectedRole}
+                    setCcList={setCcList}
+                  />
                   <CollapseButton id="p2" label="CC Routing" />
                 </div>
               </Panel>

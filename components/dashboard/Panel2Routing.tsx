@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import { Plus, Trash2, Pencil, Check, X, Tags } from "lucide-react";
+import { useCallback, useEffect, useState, type Dispatch, type SetStateAction } from "react";
+import { Plus, Trash2, Pencil, Check, X, Tags, Wand2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { UserSession } from "@/lib/session";
@@ -11,9 +11,12 @@ interface Panel2Props {
   session: UserSession;
   emailsSent: number;
   lastSentTo: string;
+  jd: string;
+  detectedRole: string;
+  setCcList: Dispatch<SetStateAction<string[]>>;
 }
 
-export default function Panel2Routing({ session, emailsSent, lastSentTo }: Panel2Props) {
+export default function Panel2Routing({ session, emailsSent, lastSentTo, jd, detectedRole, setCcList }: Panel2Props) {
   const [rules, setRules] = useState<CcRule[]>([]);
   const [loading, setLoading] = useState(true);
   const [keywords, setKeywords] = useState("");
@@ -23,6 +26,7 @@ export default function Panel2Routing({ session, emailsSent, lastSentTo }: Panel
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editKeywords, setEditKeywords] = useState("");
   const [editCc, setEditCc] = useState("");
+  const [matchResult, setMatchResult] = useState("");
 
   const load = useCallback(async () => {
     const res = await fetch(`/api/cc-rules?email=${encodeURIComponent(session.email)}`);
@@ -84,6 +88,23 @@ export default function Panel2Routing({ session, emailsSent, lastSentTo }: Panel
     await load();
   }
 
+  function populateCc() {
+    const text = `${detectedRole} ${jd}`.toLowerCase();
+    if (!text.trim()) {
+      setMatchResult("Paste a job description in the left panel first.");
+      return;
+    }
+    for (const rule of rules) {
+      const terms = rule.keywords.split(",").map((k) => k.trim().toLowerCase()).filter(Boolean);
+      if (terms.some((t) => text.includes(t))) {
+        setCcList([rule.ccEmail]);
+        setMatchResult(`Matched "${rule.keywords}" → ${rule.ccEmail}`);
+        return;
+      }
+    }
+    setMatchResult("No saved rule matched this JD. Add one below.");
+  }
+
   return (
     <div className="flex flex-col h-full overflow-hidden bg-background">
       {/* Panel header */}
@@ -105,6 +126,19 @@ export default function Panel2Routing({ session, emailsSent, lastSentTo }: Panel
             Save an email per tech stack. When you extract a JD, the first
             matching rule auto-fills the CC field.
           </p>
+
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-7 text-[11px] w-full gap-1.5 mb-1.5"
+            onClick={populateCc}
+          >
+            <Wand2 className="w-3 h-3" />
+            Populate CC from JD
+          </Button>
+          {matchResult && (
+            <p className="text-[10px] text-muted-foreground mb-2 leading-relaxed">{matchResult}</p>
+          )}
 
           {loading ? (
             <p className="text-[10px] text-muted-foreground">Loading…</p>
@@ -223,75 +257,7 @@ export default function Panel2Routing({ session, emailsSent, lastSentTo }: Panel
           </div>
         </div>
 
-        {/* Mode guide cards */}
-        <div>
-          <div className="section-label mb-1.5">Mode Guide</div>
-          <div className="space-y-2">
-            <ModeCard
-              title="Submit Consultant"
-              color="navy"
-              items={[
-                "Attach candidate resume",
-                "Include relevant experience summary",
-                "CC assigned consultant",
-                "Use formal submission language",
-              ]}
-            />
-            <ModeCard
-              title="Inquiry Only"
-              color="gold"
-              items={[
-                "Ask for JD details & requirements",
-                "Clarify work authorization preferences",
-                "Request interview process info",
-                "Do not mention specific consultants",
-              ]}
-            />
-          </div>
-        </div>
       </div>
-    </div>
-  );
-}
-
-function ModeCard({
-  title,
-  color,
-  items,
-}: {
-  title: string;
-  color: "navy" | "gold";
-  items: string[];
-}) {
-  return (
-    <div
-      className={`rounded-md border p-2.5 ${
-        color === "navy"
-          ? "border-[var(--navy)]/20 bg-[var(--navy)]/5 dark:bg-[var(--navy)]/10"
-          : "border-amber-200 bg-amber-50 dark:border-amber-800/40 dark:bg-amber-950/20"
-      }`}
-    >
-      <div
-        className={`text-[10px] font-bold uppercase tracking-wider mb-1.5 ${
-          color === "navy"
-            ? "text-[var(--navy)] dark:text-primary"
-            : "text-amber-700 dark:text-amber-400"
-        }`}
-      >
-        {title}
-      </div>
-      <ul className="space-y-0.5">
-        {items.map((item, i) => (
-          <li key={i} className="text-[10px] text-muted-foreground flex gap-1.5">
-            <span
-              className={`mt-0.5 w-1 h-1 rounded-full shrink-0 ${
-                color === "navy" ? "bg-[var(--navy)] dark:bg-primary" : "bg-amber-500"
-              }`}
-            />
-            {item}
-          </li>
-        ))}
-      </ul>
     </div>
   );
 }

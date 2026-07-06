@@ -1,7 +1,6 @@
 "use client";
 
-import Link from "next/link";
-import { Building2, Moon, Sun, LogOut, Wifi, User, Briefcase, Inbox, PenSquare } from "lucide-react";
+import { Building2, Moon, Sun, LogOut, Wifi, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UserSession } from "@/lib/session";
 
@@ -26,31 +25,6 @@ export default function TopBar({ session, darkMode, onToggleDark, onLogout }: To
           · Recruiter Portal
         </span>
       </div>
-
-      {/* CMS links */}
-      <nav className="flex items-center gap-1 ml-3">
-        <Link
-          href="/dashboard/jobs"
-          className="flex items-center gap-1.5 px-2.5 py-1 rounded text-[11px] font-medium text-white/60 hover:text-white hover:bg-white/10 transition-colors"
-        >
-          <Briefcase className="w-3 h-3" />
-          <span className="hidden md:inline">Job Postings</span>
-        </Link>
-        <Link
-          href="/dashboard/applicants"
-          className="flex items-center gap-1.5 px-2.5 py-1 rounded text-[11px] font-medium text-white/60 hover:text-white hover:bg-white/10 transition-colors"
-        >
-          <Inbox className="w-3 h-3" />
-          <span className="hidden md:inline">Applicants</span>
-        </Link>
-        <Link
-          href="/dashboard/posts"
-          className="flex items-center gap-1.5 px-2.5 py-1 rounded text-[11px] font-medium text-white/60 hover:text-white hover:bg-white/10 transition-colors"
-        >
-          <PenSquare className="w-3 h-3" />
-          <span className="hidden md:inline">Blog Posts</span>
-        </Link>
-      </nav>
 
       <div className="flex-1" />
 

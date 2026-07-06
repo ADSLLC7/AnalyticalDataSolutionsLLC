@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, type Dispatch, type SetStateAction } from "react";
 import {
   Zap, Trash2, History, Copy, Send, Eye,
   CheckCircle, Plus, X,
@@ -18,22 +18,62 @@ import type { CcRule } from "@/lib/cms";
 interface Panel1Props {
   session: UserSession;
   onLog: (log: Omit<ActivityLog, "id" | "timestamp">) => void;
+  jd: string;
+  setJd: Dispatch<SetStateAction<string>>;
+  detectedRole: string;
+  setDetectedRole: Dispatch<SetStateAction<string>>;
+  ccList: string[];
+  setCcList: Dispatch<SetStateAction<string[]>>;
 }
 
 type EmailMode = "submit" | "inquiry";
 
-export default function Panel1JD({ session, onLog }: Panel1Props) {
+type SentRecord = { subject: string; role: string; to: string; sentAt: string };
+
+const HISTORY_LIMIT = 10;
+
+function historyKey(email: string) {
+  return `ads_send_history_${email.toLowerCase()}`;
+}
+
+function loadSendHistory(email: string): SentRecord[] {
+  try {
+    const raw = localStorage.getItem(historyKey(email));
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+function relativeTime(iso: string): string {
+  const diffMs = Date.now() - new Date(iso).getTime();
+  const mins = Math.round(diffMs / 60000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins}m ago`;
+  const hours = Math.round(mins / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.round(hours / 24);
+  return days === 1 ? "yesterday" : `${days}d ago`;
+}
+
+export default function Panel1JD({
+  session,
+  onLog,
+  jd,
+  setJd,
+  detectedRole,
+  setDetectedRole,
+  ccList,
+  setCcList,
+}: Panel1Props) {
   const profile = getRecruiterByEmail(session.email);
 
   const [mode, setMode] = useState<EmailMode>("submit");
-  const [jd, setJd] = useState("");
   const [extracting, setExtracting] = useState(false);
-  const [detectedRole, setDetectedRole] = useState("");
   const [recruiterName, setRecruiterName] = useState("");
   const [recruiterEmail, setRecruiterEmail] = useState("");
   const [recruiterRole, setRecruiterRole] = useState("");
   const [subject, setSubject] = useState("");
-  const [ccList, setCcList] = useState<string[]>([]);
   const [ccInput, setCcInput] = useState("");
   const [message, setMessage] = useState("");
   const [copied, setCopied] = useState(false);
@@ -41,12 +81,14 @@ export default function Panel1JD({ session, onLog }: Panel1Props) {
   const [sendError, setSendError] = useState("");
   const [progress, setProgress] = useState(0);
   const [showHistory, setShowHistory] = useState(false);
-  const [history] = useState<string[]>([
-    "Sr. Data Engineer @ TechCorp — sent 2h ago",
-    "ML Scientist @ FinanceCo — sent yesterday",
-  ]);
+  const [showPreview, setShowPreview] = useState(false);
+  const [history, setHistory] = useState<SentRecord[]>([]);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [ccRules, setCcRules] = useState<CcRule[]>([]);
+
+  useEffect(() => {
+    setHistory(loadSendHistory(session.email));
+  }, [session.email]);
 
   const loadCcRules = useCallback(async () => {
     try {
@@ -190,6 +232,16 @@ export default function Panel1JD({ session, onLog }: Panel1Props) {
         detail: `To: ${recruiterEmail} · Subject: ${subject}`,
         type: "send",
       });
+
+      const record: SentRecord = {
+        subject,
+        role: detectedRole,
+        to: recruiterEmail,
+        sentAt: new Date().toISOString(),
+      };
+      const updated = [record, ...history].slice(0, HISTORY_LIMIT);
+      setHistory(updated);
+      localStorage.setItem(historyKey(session.email), JSON.stringify(updated));
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Unknown error";
       setSendError(`Send failed: ${msg}`);
@@ -286,15 +338,22 @@ export default function Panel1JD({ session, onLog }: Panel1Props) {
                   History
                 </Button>
                 {showHistory && (
-                  <div className="absolute right-0 top-7 z-10 w-56 bg-card border border-border rounded-md shadow-lg py-1">
+                  <div className="absolute right-0 top-7 z-10 w-64 bg-card border border-border rounded-md shadow-lg py-1 max-h-64 overflow-y-auto panel-scroll">
+                    {history.length === 0 && (
+                      <div className="px-3 py-2 text-[11px] text-muted-foreground">
+                        No emails sent yet this session.
+                      </div>
+                    )}
                     {history.map((h, i) => (
-                      <button
+                      <div
                         key={i}
-                        className="w-full text-left px-3 py-1.5 text-[11px] hover:bg-muted text-foreground truncate"
-                        onClick={() => setShowHistory(false)}
+                        className="px-3 py-1.5 text-[11px] hover:bg-muted text-foreground border-b border-border last:border-0"
                       >
-                        {h}
-                      </button>
+                        <div className="truncate font-medium">{h.role || "Untitled role"}</div>
+                        <div className="truncate text-[10px] text-muted-foreground">
+                          {h.to} · {relativeTime(h.sentAt)}
+                        </div>
+                      </div>
                     ))}
                   </div>
                 )}
@@ -460,7 +519,7 @@ export default function Panel1JD({ session, onLog }: Panel1Props) {
             size="sm"
             variant="outline"
             className="h-7 text-[11px] px-3 gap-1.5"
-            onClick={() => console.log("Preview modal (stub)")}
+            onClick={() => setShowPreview(true)}
             disabled={!message}
           >
             <Eye className="w-3 h-3" />
@@ -480,6 +539,70 @@ export default function Panel1JD({ session, onLog }: Panel1Props) {
             {sending ? "Sending…" : "Send"}
           </Button>
         </div>
+      </div>
+
+      {/* Preview modal */}
+      {showPreview && (
+        <div
+          className="fixed inset-0 z-[100] bg-black/50 flex items-center justify-center p-4"
+          onClick={() => setShowPreview(false)}
+        >
+          <div
+            className="bg-card border border-border rounded-lg shadow-2xl w-full max-w-lg max-h-[85vh] flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+              <span className="text-[13px] font-bold">Email Preview</span>
+              <button
+                onClick={() => setShowPreview(false)}
+                className="text-muted-foreground hover:text-foreground"
+                aria-label="Close preview"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto panel-scroll p-4 space-y-3">
+              <PreviewField label="To" value={recruiterEmail || "—"} />
+              <PreviewField label="CC" value={ccList.join(", ") || "—"} />
+              <PreviewField label="Subject" value={subject || "—"} />
+              <div>
+                <div className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-1">
+                  Message
+                </div>
+                <div className="bg-muted/50 border border-border rounded-md p-3 text-[12px] whitespace-pre-wrap leading-relaxed">
+                  {message || "—"}
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center justify-end gap-2 px-4 py-3 border-t border-border">
+              <Button size="sm" variant="outline" className="h-8 text-[12px]" onClick={() => setShowPreview(false)}>
+                Close
+              </Button>
+              <Button
+                size="sm"
+                className="h-8 text-[12px] bg-[var(--navy)] hover:bg-[var(--navy-light)] text-white gap-1.5"
+                onClick={() => { setShowPreview(false); handleSend(); }}
+                disabled={sending || !message || !recruiterEmail}
+              >
+                <Send className="w-3 h-3" />
+                Send Now
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function PreviewField({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <div className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-1">
+        {label}
+      </div>
+      <div className="bg-muted/50 border border-border rounded-md px-3 py-2 text-[12px] truncate">
+        {value}
       </div>
     </div>
   );
