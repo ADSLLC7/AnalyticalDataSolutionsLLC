@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import SiteNav from '@/components/site/SiteNav';
 import SiteFooter from '@/components/site/SiteFooter';
 import { getPosts, getPostBySlug } from '@/lib/cms';
+import { tagColor } from '@/lib/tag-colors';
 
 type Props = { params: { slug: string } };
 
@@ -39,7 +40,9 @@ export default async function BlogPostPage({ params }: Props) {
                 All posts
               </Link>
               <p style={{ margin: '1.5rem 0 0' }}>
-                <span className="mk-tag">{post.tag}</span>
+                <span className="mk-tag" style={{ background: tagColor(post.tag).bg, color: tagColor(post.tag).fg }}>
+                  {post.tag}
+                </span>
               </p>
               <h1 className="mk-h1 hero-line" style={{ fontSize: 'clamp(1.9rem, 4vw, 3rem)', marginTop: '1rem' }}>
                 {post.title}
@@ -93,7 +96,9 @@ export default async function BlogPostPage({ params }: Props) {
                       background: 'oklch(1 0 0)',
                     }}
                   >
-                    <span className="mk-tag">{p.tag}</span>
+                    <span className="mk-tag" style={{ background: tagColor(p.tag).bg, color: tagColor(p.tag).fg }}>
+                      {p.tag}
+                    </span>
                     <h3 className="mk-h3" style={{ textWrap: 'balance' }}>{p.title}</h3>
                     <p style={{ fontSize: '0.8rem', color: 'var(--mk-ink-muted)', fontWeight: 500, margin: 'auto 0 0' }}>
                       {p.readMinutes} min read

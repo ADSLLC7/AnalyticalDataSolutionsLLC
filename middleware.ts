@@ -3,9 +3,11 @@ import { NextRequest, NextResponse } from "next/server";
 // Basic-auth guard for the admin surface. Active only when ADMIN_USER and
 // ADMIN_PASS are set (i.e. in production); local dev stays open.
 //
-// Protected: /dashboard pages, job/post mutations, applicant data reads.
-// Public:    POST /api/applications (candidates), POST /api/contact,
-//            GET /api/jobs and GET /api/posts (public site data).
+// Protected (admin only): /dashboard/jobs, /dashboard/applicants,
+//   /dashboard/posts, job/post mutations, applicant data reads.
+// Open: /dashboard JD routing (recruiters sign in with an emailed OTP),
+//   POST /api/applications (candidates), POST /api/contact,
+//   GET /api/jobs and GET /api/posts (public site data).
 
 function unauthorized() {
   return new NextResponse("Authentication required", {
@@ -22,7 +24,10 @@ export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const method = req.method.toUpperCase();
 
-  const isDashboard = pathname.startsWith("/dashboard");
+  const isDashboard =
+    pathname.startsWith("/dashboard/jobs") ||
+    pathname.startsWith("/dashboard/applicants") ||
+    pathname.startsWith("/dashboard/posts");
   const isApplicantData =
     pathname.startsWith("/api/applications") && method === "GET";
   const isJobMutation =
@@ -46,5 +51,15 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/api/jobs/:path*", "/api/jobs", "/api/posts/:path*", "/api/posts", "/api/applications/:path*", "/api/applications"],
+  matcher: [
+    "/dashboard/jobs/:path*",
+    "/dashboard/applicants/:path*",
+    "/dashboard/posts/:path*",
+    "/api/jobs/:path*",
+    "/api/jobs",
+    "/api/posts/:path*",
+    "/api/posts",
+    "/api/applications/:path*",
+    "/api/applications",
+  ],
 };

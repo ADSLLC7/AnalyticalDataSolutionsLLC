@@ -86,28 +86,30 @@ const ashok: RecruiterProfile = {
   inquiryTemplate: siva.inquiryTemplate,
 };
 
-// ─── James — recruiter_5 ─────────────────────────────────────────────────────
-const james: RecruiterProfile = {
-  name: "James",
-  email: "james@analyticaldatasolution.com",
-  phone: "+1(970)-343-8208 / EXT no: 800",
+// ─── Swetha — recruiter_5 ────────────────────────────────────────────────────
+const swetha: RecruiterProfile = {
+  name: "Swetha",
+  email: "swetha@analyticaldatasolution.com",
+  phone: "+1(469)885-7854",
   title: "Sr Bench Sales",
   recruiterId: "recruiter_5",
   webhookUrl: NGROK_WEBHOOK,
-  getCCForRole(role) {
-    const r = role.toLowerCase();
-    if (/\.net|dotnet|asp\.net|c#|blazor|wpf|winforms|mvc|web api|entity framework|xamarin|maui/.test(r) && !/dynamics|d365|crm/.test(r))
-      return "laxmikanth.p22@gmail.com";
-    if (/dynamics|d365|crm|power platform|power apps|power automate|dataverse/.test(r))
-      return "laxmikanth.p19@gmail.com";
-    if (/golang|go developer|go lang|go engineer/.test(r))
-      return "reddy.vinay7656@gmail.com";
-    if (/business analyst|systems analyst|product manager|product owner|scrum master|agile coach|project manager|process analyst|functional analyst|requirements analyst|program analyst|\bba\b/.test(r))
-      return "ruthvik785@gmail.com,pavan92.info@gmail.com";
-    return "James@analyticaldatasolution.com";
-  },
-  submitTemplate: ethan.submitTemplate,
-  inquiryTemplate: ethan.inquiryTemplate,
+  getCCForRole: siva.getCCForRole,
+  submitTemplate: siva.submitTemplate,
+  inquiryTemplate: siva.inquiryTemplate,
+};
+
+// ─── Sri — recruiter_6 ───────────────────────────────────────────────────────
+const sri: RecruiterProfile = {
+  name: "Sri",
+  email: "sri@analyticaldatasolution.com",
+  phone: "+1(469)885-7854",
+  title: "Sr Bench Sales",
+  recruiterId: "recruiter_6",
+  webhookUrl: NGROK_WEBHOOK,
+  getCCForRole: siva.getCCForRole,
+  submitTemplate: siva.submitTemplate,
+  inquiryTemplate: siva.inquiryTemplate,
 };
 
 // ─── Sandeep — recruiter_2 ────────────────────────────────────────────────────
@@ -139,8 +141,9 @@ const RECRUITERS: Record<string, RecruiterProfile> = {
   [ethan.email]: ethan,
   [siva.email]: siva,
   [ashok.email]: ashok,
-  [james.email]: james,
   [sandeep.email]: sandeep,
+  [swetha.email]: swetha,
+  [sri.email]: sri,
 };
 
 export function getRecruiterByEmail(email: string): RecruiterProfile | null {

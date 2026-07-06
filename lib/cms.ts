@@ -322,6 +322,35 @@ export async function deletePost(slug: string): Promise<void> {
   await writeStore("posts.json", posts);
 }
 
+/* ── Login OTPs ───────────────────────────────────────────── */
+
+export type OtpRecord = {
+  codeHash: string;
+  expiresAt: number; // epoch ms
+  attempts: number;
+};
+
+export async function saveOtp(email: string, record: OtpRecord): Promise<void> {
+  const all = await readStore<Record<string, OtpRecord>>("otps.json", {});
+  all[email.toLowerCase()] = record;
+  await writeStore("otps.json", all);
+}
+
+export async function getOtp(email: string): Promise<OtpRecord | undefined> {
+  const all = await readStore<Record<string, OtpRecord>>("otps.json", {});
+  return all[email.toLowerCase()];
+}
+
+export async function updateOtp(
+  email: string,
+  record: OtpRecord | null
+): Promise<void> {
+  const all = await readStore<Record<string, OtpRecord>>("otps.json", {});
+  if (record) all[email.toLowerCase()] = record;
+  else delete all[email.toLowerCase()];
+  await writeStore("otps.json", all);
+}
+
 /* ── Contact messages ─────────────────────────────────────── */
 
 export async function getMessages(): Promise<ContactMessage[]> {

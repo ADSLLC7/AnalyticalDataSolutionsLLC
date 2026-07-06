@@ -4,6 +4,7 @@ import SiteNav from '@/components/site/SiteNav';
 import SiteFooter from '@/components/site/SiteFooter';
 import Reveal from '@/components/site/Reveal';
 import { getPosts } from '@/lib/cms';
+import { tagColor } from '@/lib/tag-colors';
 
 export const metadata: Metadata = {
   title: 'Blog | Analytical Data Solutions',
@@ -14,7 +15,11 @@ export const metadata: Metadata = {
 export const dynamic = 'force-dynamic';
 
 export default async function BlogPage() {
-  const [featured, ...rest] = await getPosts();
+  const posts = await getPosts();
+  // Rotate the featured post daily so the page changes without manual edits.
+  const dayIndex = Math.floor(Date.now() / 86_400_000);
+  const featured = posts[dayIndex % Math.max(posts.length, 1)];
+  const rest = posts.filter((p) => p.slug !== featured?.slug);
 
   return (
     <div className="mk">
@@ -79,7 +84,7 @@ export default async function BlogPage() {
                     padding: 'clamp(1.75rem, 4vw, 3rem)',
                   }}
                 >
-                  <span className="mk-tag" style={{ background: 'var(--mk-deep-soft)', color: 'var(--mk-on-deep)' }}>
+                  <span className="mk-tag" style={{ background: tagColor(featured.tag).bg, color: tagColor(featured.tag).fg }}>
                     {featured.tag}
                   </span>
                   <h2 className="mk-h2" style={{ margin: '1rem 0 0.9rem', maxWidth: '24ch' }}>
@@ -118,7 +123,9 @@ export default async function BlogPage() {
                       background: 'oklch(1 0 0)',
                     }}
                   >
-                    <span className="mk-tag">{p.tag}</span>
+                    <span className="mk-tag" style={{ background: tagColor(p.tag).bg, color: tagColor(p.tag).fg }}>
+                      {p.tag}
+                    </span>
                     <h2 className="mk-h3" style={{ textWrap: 'balance' }}>{p.title}</h2>
                     <p className="mk-body" style={{ fontSize: '0.9rem', margin: 0 }}>{p.excerpt}</p>
                     <p style={{ marginTop: 'auto', marginBottom: 0, fontSize: '0.8rem', color: 'var(--mk-ink-muted)', fontWeight: 500 }}>

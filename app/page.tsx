@@ -5,6 +5,7 @@ import SiteFooter from '@/components/site/SiteFooter';
 import HeroVisual from '@/components/site/HeroVisual';
 import Reveal from '@/components/site/Reveal';
 import { getOpenJobs, getPosts } from '@/lib/cms';
+import { tagColor } from '@/lib/tag-colors';
 
 export const dynamic = 'force-dynamic';
 
@@ -87,8 +88,8 @@ export default async function Home() {
         <section
           className="mk-section"
           style={{
-            paddingBottom: 'clamp(3rem, 6vw, 5rem)',
-            minHeight: 'calc(100dvh - 70px)',
+            paddingBottom: 'clamp(2.5rem, 5vw, 4rem)',
+            minHeight: 'calc(88dvh - 70px)',
             display: 'flex',
             alignItems: 'center',
           }}
@@ -119,6 +120,37 @@ export default async function Home() {
             </div>
             <div className="hero-line">
               <HeroVisual />
+            </div>
+          </div>
+        </section>
+
+        {/* ── Tech ticker ──────────────────────────────── */}
+        <section
+          aria-hidden
+          style={{ borderTop: '1px solid var(--mk-border)', paddingBlock: '1.1rem', overflow: 'hidden' }}
+        >
+          <div className="mk-ticker">
+            <div className="mk-ticker-track">
+              {[...Array(2)].flatMap((_, dup) =>
+                TECH_GROUPS.flatMap((g) => g.techs).map((t) => (
+                  <span
+                    key={`${dup}-${t}`}
+                    style={{
+                      display: 'inline-block',
+                      padding: '0.3rem 0.9rem',
+                      borderRadius: '999px',
+                      border: '1px solid var(--mk-border)',
+                      background: 'oklch(1 0 0)',
+                      fontSize: '0.8rem',
+                      fontWeight: 600,
+                      color: 'var(--mk-ink)',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {t}
+                  </span>
+                ))
+              )}
             </div>
           </div>
         </section>
@@ -204,6 +236,58 @@ export default async function Home() {
                   <div className="mk-row">
                     <span style={{ fontWeight: 700, fontSize: '1rem', letterSpacing: '-0.01em' }}>{s.name}</span>
                     <span className="mk-body">{s.desc}</span>
+                  </div>
+                </Reveal>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ── How we engage ────────────────────────────── */}
+        <section className="mk-section" style={{ paddingTop: 0 }}>
+          <div className="mk-container mk-split" style={{ alignItems: 'center' }}>
+            <Reveal>
+              <img
+                src="https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=1000&q=80"
+                alt="Consultants and client working through a plan at a whiteboard table"
+                loading="lazy"
+                style={{ width: '100%', aspectRatio: '4 / 3', maxHeight: '400px', objectFit: 'cover', borderRadius: '14px', display: 'block' }}
+              />
+            </Reveal>
+            <div>
+              <Reveal>
+                <h2 className="mk-h2" style={{ marginBottom: 'clamp(1.5rem, 3vw, 2.25rem)' }}>
+                  How an engagement runs
+                </h2>
+              </Reveal>
+              {[
+                ['1', 'Scope the real problem', 'A working session with your team, not a sales deck. We leave with a written scope, or we tell you we are not the right fit.'],
+                ['2', 'Build with your people', 'Consultants embed in your standups, your repos, your tools. You see progress weekly, not at a big reveal.'],
+                ['3', 'Hand off and step back', 'Documentation, tests, and training close every engagement. Your team runs it; we stay reachable.'],
+              ].map(([n, title, body], i) => (
+                <Reveal key={n} delay={i * 70}>
+                  <div style={{ display: 'flex', gap: '1.1rem', marginBottom: i < 2 ? '1.5rem' : 0 }}>
+                    <span
+                      style={{
+                        flexShrink: 0,
+                        width: '2rem',
+                        height: '2rem',
+                        borderRadius: '999px',
+                        background: 'var(--mk-accent)',
+                        color: 'oklch(0.985 0 0)',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontWeight: 700,
+                        fontSize: '0.9rem',
+                      }}
+                    >
+                      {n}
+                    </span>
+                    <div>
+                      <p style={{ fontWeight: 700, fontSize: '1rem', margin: '0.2rem 0 0.35rem' }}>{title}</p>
+                      <p className="mk-body" style={{ margin: 0, fontSize: '0.9rem' }}>{body}</p>
+                    </div>
                   </div>
                 </Reveal>
               ))}
@@ -303,7 +387,9 @@ export default async function Home() {
                         background: 'oklch(1 0 0)',
                       }}
                     >
-                      <span className="mk-tag">{p.tag}</span>
+                      <span className="mk-tag" style={{ background: tagColor(p.tag).bg, color: tagColor(p.tag).fg }}>
+                        {p.tag}
+                      </span>
                       <h3 className="mk-h3" style={{ textWrap: 'balance' }}>{p.title}</h3>
                       <p className="mk-body" style={{ fontSize: '0.9rem', margin: 0 }}>{p.excerpt}</p>
                       <p style={{ marginTop: 'auto', marginBottom: 0, fontSize: '0.8rem', color: 'var(--mk-ink-muted)', fontWeight: 500 }}>
