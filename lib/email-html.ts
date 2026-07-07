@@ -78,7 +78,7 @@ export function composeHtmlMessage(
   vars: { recruiterName: string; role: string; jd: string },
   signature: SignatureData
 ): string {
-  let compiled = template
+  const compiled = template
     .replace(/\{\{recruiterName\}\}/g, escapeHtml(vars.recruiterName || "Hiring Manager"))
     .replace(/\{\{role\}\}/g, escapeHtml(vars.role || "the open position"))
     .replace(/\{\{jd\}\}/g, escapeHtml(vars.jd || ""));
