@@ -1,36 +1,15 @@
-/**
- * ADS logomark: three ascending bars (data, growth) with the tallest topped
- * by a terracotta dot (talent). Reads as both a bar chart and people standing:
- * IT consulting and staffing in one mark.
- */
-export function LogoMark({
-  size = 40,
-  tile = 'oklch(0.17 0.012 28)',
-  bars = 'oklch(0.975 0.003 28)',
-  dot = 'oklch(0.58 0.17 28)',
-}: {
-  size?: number;
-  tile?: string;
-  bars?: string;
-  dot?: string;
-}) {
+import Image from 'next/image';
+
+export function LogoMark({ size = 40 }: { size?: number }) {
   return (
-    <svg
+    <Image
+      src="/brand/ads-icon.png"
+      alt="ADS logo mark"
       width={size}
       height={size}
-      viewBox="0 0 48 48"
-      role="img"
-      aria-label="Analytical Data Solutions logo"
-      style={{ display: 'block', flexShrink: 0 }}
-    >
-      <rect width="48" height="48" rx="11" fill={tile} />
-      {/* ascending bars, rounded caps */}
-      <rect x="11" y="26" width="6" height="12" rx="3" fill={bars} />
-      <rect x="21" y="19" width="6" height="19" rx="3" fill={bars} />
-      <rect x="31" y="17" width="6" height="21" rx="3" fill={bars} />
-      {/* talent dot crowning the tallest bar */}
-      <circle cx="34" cy="11" r="4" fill={dot} />
-    </svg>
+      style={{ display: 'block', flexShrink: 0, objectFit: 'contain' }}
+      priority
+    />
   );
 }
 
@@ -54,11 +33,7 @@ export default function Logo({
         lineHeight: 1,
       }}
     >
-      <LogoMark
-        size={size}
-        tile={onDark ? 'oklch(0.975 0.003 28)' : 'oklch(0.17 0.012 28)'}
-        bars={onDark ? 'oklch(0.17 0.012 28)' : 'oklch(0.975 0.003 28)'}
-      />
+      <LogoMark size={size} />
       <span style={{ display: 'flex', flexDirection: 'column', gap: stacked ? 3 : 2 }}>
         <span
           style={{
