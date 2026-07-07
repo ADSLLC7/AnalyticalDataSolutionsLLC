@@ -213,6 +213,24 @@ async function writeStore<T>(file: string, data: T): Promise<void> {
   await fs.writeFile(fp, JSON.stringify(data, null, 2), "utf-8");
 }
 
+// readStore + mutate + writeStore is a read-modify-write cycle, and none of
+// these stores support a compare-and-swap write — two requests that both
+// read before either writes (e.g. a fast double-click on Delete, or two
+// browser tabs) each compute their own "after" list from the same "before"
+// snapshot, and whichever write lands last silently undoes the other's
+// change. This showed up as a deleted CC rule reappearing. Serializing
+// read-modify-write cycles per file, within this server process, closes
+// that race for the common case (repeated requests hitting the same warm
+// instance) without needing real distributed locking.
+const fileLocks = new Map<string, Promise<unknown>>();
+
+async function withFileLock<T>(file: string, fn: () => Promise<T>): Promise<T> {
+  const prior = fileLocks.get(file) ?? Promise.resolve();
+  const run = prior.then(fn, fn);
+  fileLocks.set(file, run.catch(() => {}));
+  return run;
+}
+
 /* ── Resume file storage ──────────────────────────────────── */
 
 // Returns the stored reference: a blob URL on Vercel, a bare filename locally.
@@ -351,24 +369,28 @@ export async function saveCcRule(
   recruiterEmail: string,
   rule: CcRule
 ): Promise<void> {
-  const all = await getAllCcRules();
-  const key = recruiterEmail.toLowerCase();
-  const list = all[key] || [];
-  const idx = list.findIndex((r) => r.id === rule.id);
-  if (idx >= 0) list[idx] = rule;
-  else list.unshift(rule);
-  all[key] = list;
-  await writeStore("cc-rules.json", all);
+  await withFileLock("cc-rules.json", async () => {
+    const all = await getAllCcRules();
+    const key = recruiterEmail.toLowerCase();
+    const list = all[key] || [];
+    const idx = list.findIndex((r) => r.id === rule.id);
+    if (idx >= 0) list[idx] = rule;
+    else list.unshift(rule);
+    all[key] = list;
+    await writeStore("cc-rules.json", all);
+  });
 }
 
 export async function deleteCcRule(
   recruiterEmail: string,
   ruleId: string
 ): Promise<void> {
-  const all = await getAllCcRules();
-  const key = recruiterEmail.toLowerCase();
-  all[key] = (all[key] || []).filter((r) => r.id !== ruleId);
-  await writeStore("cc-rules.json", all);
+  await withFileLock("cc-rules.json", async () => {
+    const all = await getAllCcRules();
+    const key = recruiterEmail.toLowerCase();
+    all[key] = (all[key] || []).filter((r) => r.id !== ruleId);
+    await writeStore("cc-rules.json", all);
+  });
 }
 
 /* ── Recruiter send history ──────────────────────────────────

@@ -34,6 +34,7 @@ export default function Panel2Routing({ session, emailsSent, lastSentTo, jd, det
   const [matchResult, setMatchResult] = useState("");
   const [addedFeedback, setAddedFeedback] = useState("");
   const [saveFeedback, setSaveFeedback] = useState("");
+  const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
 
   const load = useCallback(async () => {
     const res = await fetch(`/api/cc-rules?email=${encodeURIComponent(session.email)}`);
@@ -134,9 +135,20 @@ export default function Panel2Routing({ session, emailsSent, lastSentTo, jd, det
   }
 
   async function removeRule(id: string) {
-    await fetch(`/api/cc-rules/${id}?email=${encodeURIComponent(session.email)}`, { method: "DELETE" });
-    await load();
-    onRulesChanged();
+    if (deletingIds.has(id)) return; // already deleting — ignore a fast double-click
+    setDeletingIds((prev) => new Set(prev).add(id));
+    setRules((prev) => prev.filter((r) => r.id !== id)); // optimistic removal
+    try {
+      await fetch(`/api/cc-rules/${id}?email=${encodeURIComponent(session.email)}`, { method: "DELETE" });
+      onRulesChanged();
+    } finally {
+      setDeletingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
+      await load();
+    }
   }
 
   function populateCc() {
@@ -260,29 +272,30 @@ export default function Panel2Routing({ session, emailsSent, lastSentTo, jd, det
                         )}
                       </div>
                       <button
-                        className="flex items-center gap-1 h-7 px-2 rounded-md border border-emerald-600/30 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-600/10 shrink-0 text-[10px] font-medium"
+                        className="flex items-center gap-1.5 h-9 px-3 rounded-md border-2 border-emerald-600/40 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-600/10 shrink-0 text-[12px] font-semibold"
                         onClick={() => addToCc(r.ccEmail)}
                         aria-label={`Add ${r.ccEmail} to CC`}
                         title="Add to CC"
                       >
-                        <UserPlus className="w-3.5 h-3.5" />
+                        <UserPlus className="w-4 h-4" />
                         CC
                       </button>
                       <button
-                        className="flex items-center justify-center h-7 w-7 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted shrink-0"
+                        className="flex items-center justify-center h-9 w-9 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted shrink-0"
                         onClick={() => startEdit(r)}
                         aria-label="Edit rule"
                         title="Edit rule"
                       >
-                        <Pencil className="w-3.5 h-3.5" />
+                        <Pencil className="w-4 h-4" />
                       </button>
                       <button
-                        className="flex items-center justify-center h-7 w-7 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 shrink-0"
+                        className="flex items-center justify-center h-9 w-9 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 shrink-0 disabled:opacity-40"
                         onClick={() => removeRule(r.id)}
+                        disabled={deletingIds.has(r.id)}
                         aria-label="Delete rule"
                         title="Delete rule"
                       >
-                        <Trash2 className="w-3.5 h-3.5" />
+                        <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
                   )}
