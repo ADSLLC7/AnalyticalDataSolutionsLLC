@@ -1,9 +1,9 @@
 import Image from 'next/image';
 
-export function LogoMark({ size = 40 }: { size?: number }) {
+export function LogoMark({ size = 40, onDark = false }: { size?: number; onDark?: boolean }) {
   return (
     <Image
-      src="/brand/ads-icon.png"
+      src={onDark ? '/brand/ads-icon-ondark.png' : '/brand/ads-icon-onlight.png'}
       alt="ADS logo mark"
       width={size}
       height={size}
@@ -33,7 +33,7 @@ export default function Logo({
         lineHeight: 1,
       }}
     >
-      <LogoMark size={size} />
+      <LogoMark size={size} onDark={onDark} />
       <span style={{ display: 'flex', flexDirection: 'column', gap: stacked ? 3 : 2 }}>
         <span
           style={{

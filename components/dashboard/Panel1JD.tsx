@@ -32,16 +32,11 @@ type EmailMode = "submit" | "inquiry";
 
 type SentRecord = { subject: string; role: string; to: string; sentAt: string };
 
-const HISTORY_LIMIT = 10;
-
-function historyKey(email: string) {
-  return `ads_send_history_${email.toLowerCase()}`;
-}
-
-function loadSendHistory(email: string): SentRecord[] {
+async function loadSendHistory(email: string): Promise<SentRecord[]> {
   try {
-    const raw = localStorage.getItem(historyKey(email));
-    return raw ? JSON.parse(raw) : [];
+    const res = await fetch(`/api/send-history?email=${encodeURIComponent(email)}`);
+    if (!res.ok) return [];
+    return await res.json();
   } catch {
     return [];
   }
@@ -90,7 +85,7 @@ export default function Panel1JD({
   const [ccRules, setCcRules] = useState<CcRule[]>([]);
 
   useEffect(() => {
-    setHistory(loadSendHistory(session.email));
+    loadSendHistory(session.email).then(setHistory);
   }, [session.email]);
 
   const loadCcRules = useCallback(async () => {
@@ -268,11 +263,17 @@ export default function Panel1JD({
           to: snapshot.recruiterEmail,
           sentAt: new Date().toISOString(),
         };
-        setHistory((prev) => {
-          const updated = [record, ...prev].slice(0, HISTORY_LIMIT);
-          localStorage.setItem(historyKey(session.email), JSON.stringify(updated));
-          return updated;
-        });
+        setHistory((prev) => [record, ...prev].slice(0, 20));
+        try {
+          const res = await fetch("/api/send-history", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: session.email, ...record }),
+          });
+          if (res.ok) setHistory(await res.json());
+        } catch {
+          /* history already updated optimistically above; safe to ignore */
+        }
       } catch (err) {
         const msg = err instanceof Error ? err.message : "Unknown error";
         setSendError(`Send to ${snapshot.recruiterEmail} failed: ${msg}`);

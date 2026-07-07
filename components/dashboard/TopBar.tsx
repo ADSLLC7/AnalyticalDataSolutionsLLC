@@ -17,7 +17,7 @@ export default function TopBar({ session, darkMode, onToggleDark, onLogout }: To
     <header className="flex-none h-11 flex items-center border-b border-border bg-[var(--navy)] text-white px-4 gap-3 shrink-0">
       {/* Logo */}
       <div className="flex items-center gap-2 min-w-0">
-        <Image src="/brand/ads-icon.png" alt="ADS" width={20} height={20} className="shrink-0" priority />
+        <Image src="/brand/ads-icon-ondark.png" alt="ADS" width={20} height={20} className="shrink-0" priority />
         <span className="font-bold text-[13px] tracking-tight whitespace-nowrap">
           Analytical Data Solutions
           <span className="text-[#fbbf24] ml-1">LLC</span>

@@ -35,9 +35,9 @@ export interface SignatureData {
 }
 
 // No "www" CNAME is configured in DNS — only the bare domain resolves.
-const LOGO_URL = "https://analyticaldatasolution.com/email/ads-logo-signature.png";
+const LOGO_URL = "https://analyticaldatasolution.com/email/ads-lockup-signature.png";
 const SITE_URL = "https://analyticaldatasolution.com";
-const ACCENT = "#c65138";
+const GOLD = "#c9860f";
 
 export function buildSignatureHtml(data: SignatureData): string {
   const whatsappLine = data.whatsapp
@@ -45,25 +45,25 @@ export function buildSignatureHtml(data: SignatureData): string {
     : "";
   return `<table cellpadding="0" cellspacing="0" style="font-family:Arial,sans-serif;font-size:13px;color:#1a1a1a;">
   <tr>
-    <td style="padding-right:14px;vertical-align:top;">
-      <img src="${LOGO_URL}" width="44" height="44" alt="ADS" style="display:block;border-radius:10px;">
-    </td>
-    <td style="border-left:2px solid ${ACCENT};padding-left:14px;">
-      <div style="font-weight:700;font-size:14px;color:#1a1a1a;">${escapeHtml(data.name)}</div>
-      <div style="color:${ACCENT};font-weight:600;font-size:12px;margin-bottom:6px;">${escapeHtml(data.title)}</div>
+    <td style="padding-right:18px;vertical-align:top;">
+      <div style="font-weight:700;font-size:14px;color:${GOLD};">${escapeHtml(data.name)}</div>
+      <div style="color:#1a1a1a;font-weight:700;font-size:12px;margin-bottom:6px;">${escapeHtml(data.title)}</div>
       <div style="line-height:1.6;">
         📞 ${escapeHtml(data.phone)}<br>
         ${whatsappLine}
-        ✉️ <a href="mailto:${escapeHtml(data.email)}" style="color:#1a1a1a;text-decoration:none;">${escapeHtml(data.email)}</a><br>
-        🌐 <a href="${SITE_URL}" style="color:${ACCENT};text-decoration:none;">www.analyticaldatasolution.com</a>
+        ✉️ <a href="mailto:${escapeHtml(data.email)}" style="color:#3b6fd6;text-decoration:underline;">${escapeHtml(data.email)}</a><br>
+        🌐 <a href="${SITE_URL}" style="color:${GOLD};text-decoration:underline;">www.analyticaldatasolution.com</a>
       </div>
       <div style="margin-top:8px;font-size:11px;color:#666;font-style:italic;">
         Building better teams through innovation and integrity.
       </div>
     </td>
+    <td style="border-left:2px solid ${GOLD};padding-left:18px;vertical-align:middle;">
+      <img src="${LOGO_URL}" width="150" height="88" alt="ADS — Empowering the Future of Tomorrow" style="display:block;">
+    </td>
   </tr>
 </table>
-<div style="margin-top:10px;font-size:10px;color:#999;line-height:1.4;">
+<div style="margin-top:10px;padding-top:8px;border-top:1px solid #e5e5e5;font-size:10px;color:#999;line-height:1.4;">
   Disclaimer: This email and any attachments are confidential and intended solely for the recipient. If you are not the intended recipient, please delete it immediately.
 </div>`;
 }

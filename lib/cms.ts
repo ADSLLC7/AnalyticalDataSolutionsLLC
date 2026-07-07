@@ -371,6 +371,42 @@ export async function deleteCcRule(
   await writeStore("cc-rules.json", all);
 }
 
+/* ── Recruiter send history ──────────────────────────────────
+   Was localStorage-only, which meant "History" only ever showed sends
+   made from that exact browser — a different machine or a cleared
+   profile always looked empty. Persisted server-side like CC rules so
+   it follows the recruiter, not the browser. ────────────────────── */
+
+export type SendRecord = {
+  subject: string;
+  role: string;
+  to: string;
+  sentAt: string;
+};
+
+const SEND_HISTORY_LIMIT = 20;
+
+async function getAllSendHistory(): Promise<Record<string, SendRecord[]>> {
+  return readStore<Record<string, SendRecord[]>>("send-history.json", {});
+}
+
+export async function getSendHistory(recruiterEmail: string): Promise<SendRecord[]> {
+  const all = await getAllSendHistory();
+  return all[recruiterEmail.toLowerCase()] || [];
+}
+
+export async function addSendHistory(
+  recruiterEmail: string,
+  record: SendRecord
+): Promise<SendRecord[]> {
+  const all = await getAllSendHistory();
+  const key = recruiterEmail.toLowerCase();
+  const updated = [record, ...(all[key] || [])].slice(0, SEND_HISTORY_LIMIT);
+  all[key] = updated;
+  await writeStore("send-history.json", all);
+  return updated;
+}
+
 /* ── Login OTPs ───────────────────────────────────────────── */
 
 export type OtpRecord = {
