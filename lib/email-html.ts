@@ -34,8 +34,9 @@ export interface SignatureData {
   email: string;
 }
 
-const LOGO_URL = "https://www.analyticaldatasolution.com/email/ads-logo-static.png";
-const SITE_URL = "https://www.analyticaldatasolution.com";
+// No "www" CNAME is configured in DNS — only the bare domain resolves.
+const LOGO_URL = "https://analyticaldatasolution.com/email/ads-logo-static.png";
+const SITE_URL = "https://analyticaldatasolution.com";
 const ACCENT = "#c65138";
 
 export function buildSignatureHtml(data: SignatureData): string {
