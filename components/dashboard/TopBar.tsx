@@ -1,6 +1,7 @@
 "use client";
 
-import { Building2, Moon, Sun, LogOut, Wifi, User } from "lucide-react";
+import Image from "next/image";
+import { Moon, Sun, LogOut, Wifi, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UserSession } from "@/lib/session";
 
@@ -16,7 +17,7 @@ export default function TopBar({ session, darkMode, onToggleDark, onLogout }: To
     <header className="flex-none h-11 flex items-center border-b border-border bg-[var(--navy)] text-white px-4 gap-3 shrink-0">
       {/* Logo */}
       <div className="flex items-center gap-2 min-w-0">
-        <Building2 className="w-4 h-4 text-[#fbbf24] shrink-0" />
+        <Image src="/brand/ads-icon.png" alt="ADS" width={20} height={20} className="shrink-0" priority />
         <span className="font-bold text-[13px] tracking-tight whitespace-nowrap">
           Analytical Data Solutions
           <span className="text-[#fbbf24] ml-1">LLC</span>
