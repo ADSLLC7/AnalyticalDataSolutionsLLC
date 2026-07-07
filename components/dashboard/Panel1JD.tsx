@@ -75,7 +75,10 @@ export default function Panel1JD({
   const [ccInput, setCcInput] = useState("");
   const [message, setMessage] = useState("");
   const [copied, setCopied] = useState(false);
-  const [sending, setSending] = useState(false);
+  // Count, not a boolean: sends run in the background (the n8n round trip
+  // can take 10-20+s) and are fire-and-forget, so a second JD's send must
+  // not be blocked just because an earlier one hasn't resolved yet.
+  const [pendingSends, setPendingSends] = useState(0);
   const [sendError, setSendError] = useState("");
   const [progress, setProgress] = useState(0);
   const [showHistory, setShowHistory] = useState(false);
@@ -239,7 +242,7 @@ export default function Panel1JD({
     setRecruiterName("");
     setRecruiterEmail("");
     setRecruiterRole("");
-    setSending(true);
+    setPendingSends((n) => n + 1);
     setProgress(30);
     setTimeout(() => setProgress(0), 900);
 
@@ -279,7 +282,7 @@ export default function Panel1JD({
         setSendError(`Send to ${snapshot.recruiterEmail} failed: ${msg}`);
         onLog({ action: "Send failed", detail: `${snapshot.recruiterEmail}: ${msg}`, type: "info" });
       } finally {
-        setSending(false);
+        setPendingSends((n) => Math.max(0, n - 1));
       }
     })();
   };
@@ -547,6 +550,12 @@ export default function Panel1JD({
             <span className="text-[10px] text-muted-foreground">
               {detectedRole ? `Role: ${detectedRole}` : "No role extracted yet"}
             </span>
+            {pendingSends > 0 && (
+              <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground">
+                <span className="w-2.5 h-2.5 border border-muted-foreground/40 border-t-transparent rounded-full animate-spin" />
+                {pendingSends === 1 ? "1 send in progress…" : `${pendingSends} sends in progress…`}
+              </span>
+            )}
           </div>
           <Button
             size="sm"
@@ -562,14 +571,10 @@ export default function Panel1JD({
             size="sm"
             className="h-7 text-[11px] px-3 gap-1.5 bg-[var(--navy)] hover:bg-[var(--navy-light)] text-white"
             onClick={handleSend}
-            disabled={sending || !message || !recruiterEmail}
+            disabled={!message || !recruiterEmail}
           >
-            {sending ? (
-              <span className="w-3 h-3 border border-white/40 border-t-white rounded-full animate-spin" />
-            ) : (
-              <Send className="w-3 h-3" />
-            )}
-            {sending ? "Sending…" : "Send"}
+            <Send className="w-3 h-3" />
+            Send
           </Button>
         </div>
       </div>
@@ -623,7 +628,7 @@ export default function Panel1JD({
                 size="sm"
                 className="h-8 text-[12px] bg-[var(--navy)] hover:bg-[var(--navy-light)] text-white gap-1.5"
                 onClick={() => { setShowPreview(false); handleSend(); }}
-                disabled={sending || !message || !recruiterEmail}
+                disabled={!message || !recruiterEmail}
               >
                 <Send className="w-3 h-3" />
                 Send Now
