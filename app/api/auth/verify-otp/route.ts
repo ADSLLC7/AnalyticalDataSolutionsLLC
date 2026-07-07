@@ -48,6 +48,7 @@ export async function POST(req: NextRequest) {
       name: profile.name,
       role: profile.title,
       phone: profile.phone,
+      ...(profile.whatsapp ? { whatsapp: profile.whatsapp } : {}),
       recruiterId: profile.recruiterId,
       // Central override so the JD-routing webhook is managed from Vercel env,
       // not code. Falls back to the per-recruiter default.

@@ -3,6 +3,7 @@ export interface UserSession {
   name: string;
   role: string;
   phone: string;
+  whatsapp?: string;
   loggedIn: boolean;
   recruiterId: string;
   webhookUrl: string;

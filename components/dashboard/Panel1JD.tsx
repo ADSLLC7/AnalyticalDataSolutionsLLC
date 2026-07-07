@@ -117,11 +117,22 @@ export default function Panel1JD({
   }
 
   const buildSignature = () => {
-    const n = session.name;
-    const t = session.role;
-    const p = session.phone;
-    const e = session.email;
-    return `Best regards,\n${n}\n${t}\nAnalytical Data Solutions\n3300 West Dallas Parkway, Suite 200, Plano, Tx 75093.\nPhone: ${p}\nEmail: ${e}\nBuilding better teams through innovation and integrity`;
+    const lines = [
+      "Best regards,",
+      session.name,
+      session.role,
+      `📞 ${session.phone}`,
+    ];
+    if (session.whatsapp) lines.push(`💬 WhatsApp: ${session.whatsapp}`);
+    lines.push(
+      `✉️ ${session.email}`,
+      "🌐 www.analyticaldatasolution.com",
+      "",
+      "Building better teams through innovation and integrity.",
+      "",
+      "Disclaimer: This email and any attachments are confidential and intended solely for the recipient. If you are not the intended recipient, please delete it immediately."
+    );
+    return lines.join("\n");
   };
 
   const extractFields = async () => {

@@ -37,7 +37,20 @@ export default function Panel3Config({ session, onUpdateSession }: Panel3Props) 
     setTimeout(() => setSaved(false), 1800);
   };
 
-  const signature = `Best regards,\n${name}\n${role}\nAnalytical Data Solutions\n3300 West Dallas Parkway, Suite 200, Plano, Tx 75093.\nPhone: ${phone}\nEmail: ${email}\nBuilding better teams through innovation and integrity`;
+  const signatureLines = [
+    "Best regards,",
+    name,
+    role,
+    `📞 ${phone}`,
+    ...(session.whatsapp ? [`💬 WhatsApp: ${session.whatsapp}`] : []),
+    `✉️ ${email}`,
+    "🌐 www.analyticaldatasolution.com",
+    "",
+    "Building better teams through innovation and integrity.",
+    "",
+    "Disclaimer: This email and any attachments are confidential and intended solely for the recipient. If you are not the intended recipient, please delete it immediately.",
+  ];
+  const signature = signatureLines.join("\n");
 
   return (
     <div className="flex flex-col h-full overflow-hidden bg-background">

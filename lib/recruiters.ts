@@ -4,6 +4,7 @@ export interface RecruiterProfile {
   name: string;
   email: string;         // canonical email, lowercase
   phone: string;
+  whatsapp?: string;
   title: string;
   recruiterId: string;
   webhookUrl: string;
@@ -19,8 +20,8 @@ const NGROK_WEBHOOK =
 const ethan: RecruiterProfile = {
   name: "Ethan Hunt",
   email: "ethan@analyticaldatasolution.com",
-  phone: "+1(469)626-6060 Ext: 807",
-  title: "Sr Bench Sales",
+  phone: "+1 (469) 626-6060 Ext: 807",
+  title: "Sr. Bench Sales Executive",
   recruiterId: "recruiter_3",
   webhookUrl: NGROK_WEBHOOK,
   getCCForRole(role) {
@@ -45,8 +46,8 @@ const ethan: RecruiterProfile = {
 const siva: RecruiterProfile = {
   name: "Siva",
   email: "siva@analyticaldatasolution.com",
-  phone: "+1(469)885-7854",
-  title: "Sr Bench Sales",
+  phone: "+1 (469) 885-7854",
+  title: "Manager",
   recruiterId: "recruiter_1",
   // A bare localhost URL can never be reached from a deployed site (the
   // browser making the request has no route to the recruiter's own machine).
@@ -80,8 +81,9 @@ const siva: RecruiterProfile = {
 const ashok: RecruiterProfile = {
   name: "Ashok",
   email: "ashok@analyticaldatasolution.com",
-  phone: "+1(469)885-7854",
-  title: "Sr Bench Sales",
+  phone: "+1 (469) 342-4680 Ext: 804",
+  whatsapp: "+91 73867 79314",
+  title: "Manager Sales",
   recruiterId: "recruiter_4",
   webhookUrl: NGROK_WEBHOOK,
   getCCForRole: siva.getCCForRole, // same routing as Siva
@@ -93,8 +95,8 @@ const ashok: RecruiterProfile = {
 const swetha: RecruiterProfile = {
   name: "Swetha",
   email: "swetha@analyticaldatasolution.com",
-  phone: "+1(469)885-7854",
-  title: "Sr Bench Sales",
+  phone: "+1 (469) 342-4959",
+  title: "Senior Bench Sales Recruiter",
   recruiterId: "recruiter_5",
   webhookUrl: NGROK_WEBHOOK,
   getCCForRole: siva.getCCForRole,
@@ -119,8 +121,9 @@ const sri: RecruiterProfile = {
 const sandeep: RecruiterProfile = {
   name: "Sandeep",
   email: "sandeep@analyticaldatasolution.com",
-  phone: "+1(469)777-8937 Ext:808",
-  title: "Sr Bench Sales",
+  phone: "+1 (469) 777-8937 Ext: 808",
+  whatsapp: "+91 99510 24135",
+  title: "Senior Sales Recruiter",
   recruiterId: "recruiter_2",
   webhookUrl: NGROK_WEBHOOK,
   getCCForRole(role) {
