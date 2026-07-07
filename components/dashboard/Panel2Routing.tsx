@@ -33,6 +33,7 @@ export default function Panel2Routing({ session, emailsSent, lastSentTo, jd, det
   const [editDriveFileId, setEditDriveFileId] = useState("");
   const [matchResult, setMatchResult] = useState("");
   const [addedFeedback, setAddedFeedback] = useState("");
+  const [saveFeedback, setSaveFeedback] = useState("");
 
   const load = useCallback(async () => {
     const res = await fetch(`/api/cc-rules?email=${encodeURIComponent(session.email)}`);
@@ -46,6 +47,7 @@ export default function Panel2Routing({ session, emailsSent, lastSentTo, jd, det
 
   async function addRule() {
     setError("");
+    setSaveFeedback("");
     if (!keywords.trim() || !ccEmail.trim()) {
       setError("Tech stack keywords and a CC email are both required.");
       return;
@@ -68,6 +70,8 @@ export default function Panel2Routing({ session, emailsSent, lastSentTo, jd, det
         setError(json.error || "Could not save that rule.");
         return;
       }
+      setSaveFeedback(`Saved${consultantName.trim() ? ` — ${consultantName.trim()}` : ""}.`);
+      setTimeout(() => setSaveFeedback(""), 3000);
       setConsultantName("");
       setKeywords("");
       setCcEmail("");
@@ -256,26 +260,29 @@ export default function Panel2Routing({ session, emailsSent, lastSentTo, jd, det
                         )}
                       </div>
                       <button
-                        className="text-muted-foreground hover:text-emerald-600 shrink-0"
+                        className="flex items-center gap-1 h-7 px-2 rounded-md border border-emerald-600/30 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-600/10 shrink-0 text-[10px] font-medium"
                         onClick={() => addToCc(r.ccEmail)}
                         aria-label={`Add ${r.ccEmail} to CC`}
                         title="Add to CC"
                       >
-                        <UserPlus className="w-3 h-3" />
+                        <UserPlus className="w-3.5 h-3.5" />
+                        CC
                       </button>
                       <button
-                        className="text-muted-foreground hover:text-foreground shrink-0"
+                        className="flex items-center justify-center h-7 w-7 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted shrink-0"
                         onClick={() => startEdit(r)}
                         aria-label="Edit rule"
+                        title="Edit rule"
                       >
-                        <Pencil className="w-3 h-3" />
+                        <Pencil className="w-3.5 h-3.5" />
                       </button>
                       <button
-                        className="text-muted-foreground hover:text-destructive shrink-0"
+                        className="flex items-center justify-center h-7 w-7 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 shrink-0"
                         onClick={() => removeRule(r.id)}
                         aria-label="Delete rule"
+                        title="Delete rule"
                       >
-                        <Trash2 className="w-3 h-3" />
+                        <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     </div>
                   )}
@@ -320,10 +327,18 @@ export default function Panel2Routing({ session, emailsSent, lastSentTo, jd, det
                 disabled={saving}
               >
                 <Plus className="w-3 h-3" />
-                Save
+                {saving ? "Saving…" : "Save"}
               </Button>
             </div>
-            {error && <p className="text-[10px] text-destructive">{error}</p>}
+            {error && (
+              <p className="text-[10px] text-destructive font-medium">{error}</p>
+            )}
+            {saveFeedback && (
+              <p className="text-[10px] text-emerald-600 font-medium flex items-center gap-1">
+                <Check className="w-3 h-3" />
+                {saveFeedback}
+              </p>
+            )}
           </div>
         </div>
 

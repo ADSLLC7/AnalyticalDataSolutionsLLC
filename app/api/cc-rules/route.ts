@@ -9,8 +9,13 @@ import { getCcRules, saveCcRule, type CcRule } from "@/lib/cms";
 
 // Accepts either a bare Drive file ID or a full share URL
 // (https://drive.google.com/file/d/<ID>/view, ?id=<ID>, /open?id=<ID>).
-// Folder links are rejected: n8n downloads a single file by ID, so a folder
-// URL silently can't work — share the resume file itself instead.
+// Folder links and native Google Docs/Sheets/Slides links are both
+// rejected: n8n downloads a single binary file by ID, and neither a folder
+// nor a native Google Doc works with that — a Doc isn't a downloadable
+// file at all without an export step the workflow doesn't do. Without this
+// check the raw URL was silently stored as if it were a file ID, which
+// looked like a successful save but could never actually resolve to a
+// resume in the automation.
 function extractDriveFileId(input: string): { fileId?: string; error?: string } {
   const trimmed = input.trim();
   if (!trimmed) return {};
@@ -20,9 +25,21 @@ function extractDriveFileId(input: string): { fileId?: string; error?: string } 
         "That's a Drive folder link, not a file link. Open the resume file itself in Drive, click Share, and paste that file's link instead.",
     };
   }
+  if (/docs\.google\.com\/(document|spreadsheets|presentation)\//.test(trimmed)) {
+    return {
+      error:
+        "That's a Google Docs/Sheets/Slides link, not a resume file. Upload the resume as a Word or PDF file to Drive, then share that file's link instead.",
+    };
+  }
   const m =
     trimmed.match(/\/file\/d\/([a-zA-Z0-9_-]{10,})/) ||
     trimmed.match(/[?&]id=([a-zA-Z0-9_-]{10,})/);
+  if (!m && /^https?:\/\//.test(trimmed)) {
+    return {
+      error:
+        "That doesn't look like a Drive file link. Paste the resume file's Drive share link (drive.google.com/file/d/...), or just the file ID.",
+    };
+  }
   return { fileId: m ? m[1] : trimmed };
 }
 
