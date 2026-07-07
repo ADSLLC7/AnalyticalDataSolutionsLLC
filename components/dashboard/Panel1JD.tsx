@@ -13,6 +13,7 @@ import { ActivityLog } from "@/lib/mock-data";
 import { UserSession } from "@/lib/session";
 import { getRecruiterByEmail } from "@/lib/recruiters";
 import { extractRole, extractName, extractEmail } from "@/lib/jd-extract";
+import { composeHtmlMessage } from "@/lib/email-html";
 import type { CcRule } from "@/lib/cms";
 
 interface Panel1Props {
@@ -116,25 +117,6 @@ export default function Panel1JD({
     return null;
   }
 
-  const buildSignature = () => {
-    const lines = [
-      "Best regards,",
-      session.name,
-      session.role,
-      `📞 ${session.phone}`,
-    ];
-    if (session.whatsapp) lines.push(`💬 WhatsApp: ${session.whatsapp}`);
-    lines.push(
-      `✉️ ${session.email}`,
-      "🌐 www.analyticaldatasolution.com",
-      "",
-      "Building better teams through innovation and integrity.",
-      "",
-      "Disclaimer: This email and any attachments are confidential and intended solely for the recipient. If you are not the intended recipient, please delete it immediately."
-    );
-    return lines.join("\n");
-  };
-
   const extractFields = async () => {
     if (!jd.trim()) return;
     setExtracting(true);
@@ -167,11 +149,17 @@ export default function Panel1JD({
       ? (profile?.submitTemplate ?? "Hi {{recruiterName}},\n\n{{signature}}\n\n---\nJob Description:\n\n{{jd}}")
       : (profile?.inquiryTemplate ?? "Hi {{recruiterName}},\n\n{{signature}}\n\n---\nJob Description:\n\n{{jd}}");
 
-    const compiled = tpl
-      .replace(/\{\{recruiterName\}\}/g, recruiterName || extractedName || "[Recruiter Name]")
-      .replace(/\{\{role\}\}/g, role)
-      .replace(/\{\{signature\}\}/g, buildSignature())
-      .replace(/\{\{jd\}\}/g, jd.trim());
+    const compiled = composeHtmlMessage(
+      tpl,
+      { recruiterName: recruiterName || extractedName || "Hiring Manager", role, jd: jd.trim() },
+      {
+        name: session.name,
+        title: session.role,
+        phone: session.phone,
+        whatsapp: session.whatsapp,
+        email: session.email,
+      }
+    );
 
     setMessage(compiled);
 
@@ -499,7 +487,7 @@ export default function Panel1JD({
         {/* Message composer */}
         <div>
           <div className="flex items-center justify-between mb-1.5">
-            <div className="section-label">Message</div>
+            <div className="section-label">Message (HTML source — use Preview to see it rendered)</div>
             <div className="flex items-center gap-2">
               <span className="text-[10px] text-muted-foreground tabular-nums">{charCount} chars</span>
               <Button
@@ -611,11 +599,19 @@ export default function Panel1JD({
               <PreviewField label="Subject" value={subject || "—"} />
               <div>
                 <div className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-1">
-                  Message
+                  Message (rendered as recipients will see it)
                 </div>
-                <div className="bg-muted/50 border border-border rounded-md p-3 text-[12px] whitespace-pre-wrap leading-relaxed">
-                  {message || "—"}
-                </div>
+                {message ? (
+                  <div
+                    className="bg-white border border-border rounded-md p-3 text-[13px]"
+                    // The message is our own HTML template output (escaped
+                    // user input via composeHtmlMessage), not raw third-party
+                    // HTML, so rendering it here is safe.
+                    dangerouslySetInnerHTML={{ __html: message }}
+                  />
+                ) : (
+                  <div className="bg-muted/50 border border-border rounded-md p-3 text-[12px] text-muted-foreground">—</div>
+                )}
               </div>
             </div>
             <div className="flex items-center justify-end gap-2 px-4 py-3 border-t border-border">
