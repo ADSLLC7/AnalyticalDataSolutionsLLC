@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback, type Dispatch, type SetStateAction } from "react";
+import { useState, useRef, useEffect, type Dispatch, type SetStateAction } from "react";
 import {
   Zap, Trash2, History, Copy, Send, Eye,
   CheckCircle, Plus, X,
@@ -25,7 +25,7 @@ interface Panel1Props {
   setDetectedRole: Dispatch<SetStateAction<string>>;
   ccList: string[];
   setCcList: Dispatch<SetStateAction<string[]>>;
-  ccRulesVersion: number;
+  ccRules: CcRule[];
 }
 
 type EmailMode = "submit" | "inquiry";
@@ -62,7 +62,7 @@ export default function Panel1JD({
   setDetectedRole,
   ccList,
   setCcList,
-  ccRulesVersion,
+  ccRules,
 }: Panel1Props) {
   const profile = getRecruiterByEmail(session.email);
 
@@ -85,24 +85,10 @@ export default function Panel1JD({
   const [showPreview, setShowPreview] = useState(false);
   const [history, setHistory] = useState<SentRecord[]>([]);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const [ccRules, setCcRules] = useState<CcRule[]>([]);
 
   useEffect(() => {
     loadSendHistory(session.email).then(setHistory);
   }, [session.email]);
-
-  const loadCcRules = useCallback(async () => {
-    try {
-      const res = await fetch(`/api/cc-rules?email=${encodeURIComponent(session.email)}`);
-      if (res.ok) setCcRules(await res.json());
-    } catch {
-      /* CC auto-fill is a convenience; ignore load failures */
-    }
-  }, [session.email]);
-
-  useEffect(() => {
-    loadCcRules();
-  }, [loadCcRules, ccRulesVersion]);
 
   // First rule whose comma-separated keywords appear in the JD text or the
   // detected role wins; recruiters manage this list themselves (Panel2).

@@ -14,11 +14,11 @@ interface Panel2Props {
   jd: string;
   detectedRole: string;
   setCcList: Dispatch<SetStateAction<string[]>>;
-  onRulesChanged: () => void;
+  ccRules: CcRule[];
+  setCcRules: Dispatch<SetStateAction<CcRule[]>>;
 }
 
-export default function Panel2Routing({ session, emailsSent, lastSentTo, jd, detectedRole, setCcList, onRulesChanged }: Panel2Props) {
-  const [rules, setRules] = useState<CcRule[]>([]);
+export default function Panel2Routing({ session, emailsSent, lastSentTo, jd, detectedRole, setCcList, ccRules: rules, setCcRules: setRules }: Panel2Props) {
   const [loading, setLoading] = useState(true);
   const [consultantName, setConsultantName] = useState("");
   const [keywords, setKeywords] = useState("");
@@ -40,7 +40,7 @@ export default function Panel2Routing({ session, emailsSent, lastSentTo, jd, det
     const res = await fetch(`/api/cc-rules?email=${encodeURIComponent(session.email)}`);
     if (res.ok) setRules(await res.json());
     setLoading(false);
-  }, [session.email]);
+  }, [session.email, setRules]);
 
   useEffect(() => {
     load();
@@ -84,7 +84,6 @@ export default function Panel2Routing({ session, emailsSent, lastSentTo, jd, det
       setKeywords("");
       setCcEmail("");
       setDriveFileId("");
-      onRulesChanged();
     } catch {
       setError("Network error while saving. Check your connection and try again.");
     } finally {
@@ -125,7 +124,6 @@ export default function Panel2Routing({ session, emailsSent, lastSentTo, jd, det
         const updated: CcRule = await res.json();
         setRules((prev) => prev.map((r) => (r.id === updated.id ? updated : r)));
         setEditingId(null);
-        onRulesChanged();
       } else {
         const json = await res.json().catch(() => ({}));
         setError(json.error || "Could not save that rule.");
@@ -153,7 +151,6 @@ export default function Panel2Routing({ session, emailsSent, lastSentTo, jd, det
         setError("Could not delete that rule. Please try again.");
         await load();
       }
-      onRulesChanged();
     } catch {
       setError("Network error while deleting. Please try again.");
       await load();

@@ -13,6 +13,7 @@ import Panel1JD from "@/components/dashboard/Panel1JD";
 import Panel2Routing from "@/components/dashboard/Panel2Routing";
 import Panel3Config from "@/components/dashboard/Panel3Config";
 import CollapsedTab from "@/components/dashboard/CollapsedTab";
+import type { CcRule } from "@/lib/cms";
 
 type PanelId = "p1" | "p2" | "p3";
 
@@ -31,9 +32,15 @@ export default function DashboardPage() {
   const [jd, setJd] = useState("");
   const [detectedRole, setDetectedRole] = useState("");
   const [ccList, setCcList] = useState<string[]>([]);
-  // Bumped whenever Panel2 adds/edits/deletes a CC rule so Panel1 refetches
-  // its own copy (used to attach each consultant's resume file ID on send).
-  const [ccRulesVersion, setCcRulesVersion] = useState(0);
+  // Single shared copy of the recruiter's CC rules, owned here instead of
+  // independently by each panel. Panel1 used to refetch its own copy from
+  // the API whenever Panel2 changed a rule, but that GET has no guarantee
+  // of observing the write it was triggered by (no read-your-writes on the
+  // blob store) — a Send launched right after adding/editing a rule could
+  // read the stale pre-write list and attach fileId: null for a consultant
+  // that does have a resume linked. Sharing one in-memory array, updated
+  // directly from each mutation's own response, removes that race entirely.
+  const [ccRules, setCcRules] = useState<CcRule[]>([]);
 
   useEffect(() => {
     const s = getSession();
@@ -45,6 +52,11 @@ export default function DashboardPage() {
 
     const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
     setDarkMode(prefersDark);
+
+    fetch(`/api/cc-rules?email=${encodeURIComponent(s.email)}`)
+      .then((res) => (res.ok ? res.json() : []))
+      .then(setCcRules)
+      .catch(() => {});
   }, [router]);
 
   useEffect(() => {
@@ -161,7 +173,7 @@ export default function DashboardPage() {
                     setDetectedRole={setDetectedRole}
                     ccList={ccList}
                     setCcList={setCcList}
-                    ccRulesVersion={ccRulesVersion}
+                    ccRules={ccRules}
                   />
                   <CollapseButton id="p1" label="JD & Outreach" />
                 </div>
@@ -181,7 +193,8 @@ export default function DashboardPage() {
                     jd={jd}
                     detectedRole={detectedRole}
                     setCcList={setCcList}
-                    onRulesChanged={() => setCcRulesVersion((v) => v + 1)}
+                    ccRules={ccRules}
+                    setCcRules={setCcRules}
                   />
                   <CollapseButton id="p2" label="CC Routing" />
                 </div>
