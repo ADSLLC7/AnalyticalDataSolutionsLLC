@@ -181,9 +181,13 @@ async function readStore<T>(file: string, fallback: T): Promise<T> {
     try {
       const meta = await head(`${STORE_PREFIX}/${file}`);
       const res = await fetchBlob(meta.url);
-      if (!res.ok) return fallback;
+      if (!res.ok) {
+        console.error(`[cms] readStore(${file}): fetchBlob returned ${res.status} ${res.statusText}`);
+        return fallback;
+      }
       return (await res.json()) as T;
-    } catch {
+    } catch (err) {
+      console.error(`[cms] readStore(${file}) blob error:`, err instanceof Error ? err.message : err);
       return fallback;
     }
   }
