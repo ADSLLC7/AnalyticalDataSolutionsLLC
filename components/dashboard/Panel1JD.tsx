@@ -359,15 +359,14 @@ export default function Panel1JD({
             <div className="flex gap-1">
               <Button
                 size="sm"
-                variant="outline"
-                className="h-6 text-[10px] px-2 gap-1"
+                className="h-8 text-[12px] font-semibold px-3 gap-1.5 bg-[var(--navy)] hover:bg-[var(--navy-light)] text-white disabled:opacity-50"
                 onClick={extractFields}
                 disabled={extracting || !jd.trim()}
               >
                 {extracting ? (
-                  <span className="w-2.5 h-2.5 border border-current border-t-transparent rounded-full animate-spin" />
+                  <span className="w-3.5 h-3.5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
                 ) : (
-                  <Zap className="w-2.5 h-2.5 text-[var(--gold)]" />
+                  <Zap className="w-3.5 h-3.5 text-[var(--gold)]" />
                 )}
                 Extract Fields
               </Button>

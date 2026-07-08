@@ -71,13 +71,19 @@ export default function Panel2Routing({ session, emailsSent, lastSentTo, jd, det
         setError(json.error || "Could not save that rule.");
         return;
       }
+      // Use the rule the server just handed back, not a follow-up GET — the
+      // blob store isn't guaranteed to read its own write back immediately,
+      // so an immediate re-fetch here could still show the old (pre-save)
+      // list and make a real save look like it "didn't show up" until a
+      // manual refresh minutes later.
+      const created: CcRule = await res.json();
+      setRules((prev) => [created, ...prev]);
       setSaveFeedback(`Saved${consultantName.trim() ? ` — ${consultantName.trim()}` : ""}.`);
       setTimeout(() => setSaveFeedback(""), 3000);
       setConsultantName("");
       setKeywords("");
       setCcEmail("");
       setDriveFileId("");
-      await load();
       onRulesChanged();
     } catch {
       setError("Network error while saving. Check your connection and try again.");
@@ -116,8 +122,9 @@ export default function Panel2Routing({ session, emailsSent, lastSentTo, jd, det
         }),
       });
       if (res.ok) {
+        const updated: CcRule = await res.json();
+        setRules((prev) => prev.map((r) => (r.id === updated.id ? updated : r)));
         setEditingId(null);
-        await load();
         onRulesChanged();
       } else {
         const json = await res.json().catch(() => ({}));
@@ -139,15 +146,23 @@ export default function Panel2Routing({ session, emailsSent, lastSentTo, jd, det
     setDeletingIds((prev) => new Set(prev).add(id));
     setRules((prev) => prev.filter((r) => r.id !== id)); // optimistic removal
     try {
-      await fetch(`/api/cc-rules/${id}?email=${encodeURIComponent(session.email)}`, { method: "DELETE" });
+      const res = await fetch(`/api/cc-rules/${id}?email=${encodeURIComponent(session.email)}`, { method: "DELETE" });
+      if (!res.ok) {
+        // Delete actually failed server-side — undo the optimistic removal
+        // instead of silently leaving the UI wrong.
+        setError("Could not delete that rule. Please try again.");
+        await load();
+      }
       onRulesChanged();
+    } catch {
+      setError("Network error while deleting. Please try again.");
+      await load();
     } finally {
       setDeletingIds((prev) => {
         const next = new Set(prev);
         next.delete(id);
         return next;
       });
-      await load();
     }
   }
 
