@@ -5,11 +5,35 @@ import { POSTS as SEED_POSTS, type Post } from "./posts";
 const DATA_DIR = path.join(process.cwd(), "data");
 export const UPLOADS_DIR = path.join(DATA_DIR, "uploads");
 
-// Vercel Blob mode is enabled when the token env var is present (set
-// automatically when a Blob store is connected to the Vercel project).
-// Locally, without the token, everything falls back to the data/ folder.
+// Small, frequently-mutated JSON records (jobs, applications, posts,
+// cc-rules, OTPs, messages, send-history) live in Redis. Blob storage is a
+// CDN-backed store meant for large, mostly-static files — overwriting the
+// same blob key repeatedly (what every one of these stores does) is only
+// eventually consistent there, which showed up as a write succeeding while
+// an immediate read-back returned stale or empty data. Redis (Upstash, via
+// Vercel's KV integration — the old @vercel/kv product is deprecated in
+// favor of this) gives real read-your-writes consistency for exactly this
+// kind of small mutable key-value data. Actual resume files stay on Blob
+// (see saveResumeFile/readResumeFile below) — that's the workload Blob is
+// actually built for.
+const useRedis =
+  !!(process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN) ||
+  !!(process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN);
+
+let redisClient: import("@upstash/redis").Redis | null = null;
+async function getRedis() {
+  if (!redisClient) {
+    const { Redis } = await import("@upstash/redis");
+    redisClient = new Redis({
+      url: process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL!,
+      token: process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN!,
+    });
+  }
+  return redisClient;
+}
+
 const useBlob = !!process.env.BLOB_READ_WRITE_TOKEN;
-// Secret path prefix so JSON stores are not at guessable blob URLs.
+// Secret path prefix so JSON stores are not at guessable blob/key names.
 const STORE_PREFIX = `cms-${process.env.CMS_SECRET || "dev"}`;
 
 export type Job = {
@@ -176,6 +200,16 @@ async function fetchBlob(url: string): Promise<Response> {
 }
 
 async function readStore<T>(file: string, fallback: T): Promise<T> {
+  if (useRedis) {
+    try {
+      const redis = await getRedis();
+      const raw = await redis.get<T>(`${STORE_PREFIX}:${file}`);
+      return raw ?? fallback;
+    } catch (err) {
+      console.error(`[cms] readStore(${file}) redis error:`, err instanceof Error ? err.message : err);
+      return fallback;
+    }
+  }
   if (useBlob) {
     const { head } = await import("@vercel/blob");
     try {
@@ -202,6 +236,11 @@ async function readStore<T>(file: string, fallback: T): Promise<T> {
 }
 
 async function writeStore<T>(file: string, data: T): Promise<void> {
+  if (useRedis) {
+    const redis = await getRedis();
+    await redis.set(`${STORE_PREFIX}:${file}`, data);
+    return;
+  }
   if (useBlob) {
     const { put } = await import("@vercel/blob");
     await put(`${STORE_PREFIX}/${file}`, JSON.stringify(data), {
