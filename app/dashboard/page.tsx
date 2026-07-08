@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Group as PanelGroup, Panel, Separator as PanelResizeHandle } from "react-resizable-panels";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, ChevronLeft } from "lucide-react";
 
 import { getSession, clearSession, UserSession } from "@/lib/session";
 import { ActivityLog } from "@/lib/mock-data";
@@ -105,14 +105,33 @@ export default function DashboardPage() {
   const p2Collapsed = collapsed.has("p2");
   const p3Collapsed = collapsed.has("p3");
 
-  const CollapseButton = ({ id, label }: { id: PanelId; label: string }) => (
+  // Panels collapse right-to-left (Configuration first, then CC Routing),
+  // each time handing its freed width to whatever remains open — that's
+  // just how react-resizable-panels redistributes size when a Panel
+  // unmounts, so JD & Outreach fills the rest automatically once Config
+  // and/or CC Routing are tucked away. Every panel gets its own chevron so
+  // any one of them can also be collapsed directly, independent of that
+  // priority order.
+  const CollapseButton = ({
+    id,
+    label,
+    side = "right",
+  }: {
+    id: PanelId;
+    label: string;
+    side?: "left" | "right";
+  }) => (
     <button
       onClick={() => toggleCollapse(id)}
-      className="absolute right-0 top-1/2 -translate-y-1/2 z-10 flex items-center justify-center w-4 h-8 bg-card border border-border rounded-l shadow-sm hover:bg-muted transition-colors"
+      className={`absolute ${side === "right" ? "right-0 rounded-l" : "left-0 rounded-r"} top-1/2 -translate-y-1/2 z-10 flex items-center justify-center w-4 h-8 bg-card border border-border shadow-sm hover:bg-muted transition-colors`}
       aria-label={`Collapse ${label}`}
       title={`Collapse ${label}`}
     >
-      <ChevronRight className="w-2.5 h-2.5 text-muted-foreground" />
+      {side === "right" ? (
+        <ChevronRight className="w-2.5 h-2.5 text-muted-foreground" />
+      ) : (
+        <ChevronLeft className="w-2.5 h-2.5 text-muted-foreground" />
+      )}
     </button>
   );
 
@@ -173,8 +192,9 @@ export default function DashboardPage() {
 
           {!p3Collapsed && (
             <Panel defaultSize={30} minSize={18} id="panel3">
-              <div className="h-full">
+              <div className="relative h-full">
                 <Panel3Config session={session} onUpdateSession={handleUpdateSession} />
+                <CollapseButton id="p3" label="Configuration" side="left" />
               </div>
             </Panel>
           )}

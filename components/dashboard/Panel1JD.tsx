@@ -253,7 +253,15 @@ export default function Panel1JD({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        if (!res.ok) {
+          // Surface whatever the n8n workflow itself reported (e.g. a node
+          // error like "role is not defined"), not just the HTTP status —
+          // that's the difference between a recruiter seeing a real reason
+          // and a useless "HTTP 500".
+          const bodyText = await res.text().catch(() => "");
+          const detail = bodyText.slice(0, 300).trim();
+          throw new Error(detail ? `HTTP ${res.status}: ${detail}` : `HTTP ${res.status}`);
+        }
         onLog({
           action: "Email sent",
           detail: `To: ${snapshot.recruiterEmail} · Subject: ${snapshot.subject}`,
@@ -278,7 +286,16 @@ export default function Panel1JD({
           /* history already updated optimistically above; safe to ignore */
         }
       } catch (err) {
-        const msg = err instanceof Error ? err.message : "Unknown error";
+        // A bare "Failed to fetch" TypeError means the browser couldn't even
+        // reach webhookUrl — almost always a webhook that's down, or (if it's
+        // an ngrok free-tier tunnel) a URL that rotated since it was hardcoded,
+        // not something about the recruiter's own network.
+        const isNetworkError = err instanceof TypeError;
+        const msg = isNetworkError
+          ? "Could not reach the webhook URL (it may be offline or the address changed — this isn't specific to your network)."
+          : err instanceof Error
+            ? err.message
+            : "Unknown error";
         setSendError(`Send to ${snapshot.recruiterEmail} failed: ${msg}`);
         onLog({ action: "Send failed", detail: `${snapshot.recruiterEmail}: ${msg}`, type: "info" });
       } finally {
