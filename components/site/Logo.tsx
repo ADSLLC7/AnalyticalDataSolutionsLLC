@@ -55,7 +55,7 @@ export default function Logo({
             color: muted,
           }}
         >
-          IT Consulting &amp; Staffing
+          Empowering the Leaders of Tomorrow
         </span>
       </span>
     </span>

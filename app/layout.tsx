@@ -10,9 +10,18 @@ const barlow = Barlow({
 });
 
 export const metadata: Metadata = {
-  title: "Analytical Data Solutions | IT Consulting",
+  title: "Analytical Data Solutions | Empowering the Leaders of Tomorrow",
   description:
-    "IT consulting for mid-market companies and growth-stage startups. Cloud infrastructure, data engineering, DevOps, and technical staffing.",
+    "Empowering the leaders of tomorrow through IT consulting, cloud infrastructure, data engineering, DevOps, and technical staffing.",
+  icons: {
+    icon: [
+      { url: "/favicon-16.png", sizes: "16x16", type: "image/png" },
+      { url: "/favicon-32.png", sizes: "32x32", type: "image/png" },
+      { url: "/favicon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/favicon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: { url: "/favicon-180.png", sizes: "180x180", type: "image/png" },
+  },
 };
 
 export default function RootLayout({

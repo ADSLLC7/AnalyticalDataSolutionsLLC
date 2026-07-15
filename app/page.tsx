@@ -10,7 +10,7 @@ import { tagColor } from '@/lib/tag-colors';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: 'Analytical Data Solutions | IT Consulting & Technical Staffing',
+  title: 'Analytical Data Solutions | Empowering the Leaders of Tomorrow',
   description:
     'IT consulting for mid-market companies and growth-stage startups: cloud infrastructure, data engineering, DevOps, system integration, and technical staffing.',
 };
