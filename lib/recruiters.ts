@@ -39,7 +39,7 @@ const ethan: RecruiterProfile = {
   submitTemplate:
     "Hi {{recruiterName}},\n\nHope you're doing well. I came across your post regarding {{role}} opportunity and wanted to reach out.\n\nI have a strong consultant available on a C2C basis who closely matches your requirements. They are ready to start immediately and open to the right opportunity.\n\nMy consultant cc'd here will be sharing their profile and resume with you shortly.\n\nPlease feel free to reach me at your earliest convenience.\n\n{{signature}}\n\n---\nJob Description:\n\n{{jd}}",
   inquiryTemplate:
-    "Hi {{recruiterName}},\n\nHope you're doing well. I came across your post regarding {{role}} role and wanted to check if this position is still open.\n\nCould you also share the pay rate (C2C) and any visa or work authorization restrictions?\n\nI have qualified consultants available and would love to discuss further.\n\nThank you for your time — looking forward to hearing from you.\n\n{{signature}}\n\n---\nJob Description:\n\n{{jd}}",
+    "Hi {{recruiterName}},\n\nHope you're doing well. I came across the {{role}} opportunity and wanted to reach out.\n\nI have a strong consultant available on a C2C basis who closely matches your requirements. They are ready to start immediately and open to the opportunity.\n\nPlease let me know if the position is still open and visa considerations for the same?\n\n{{signature}}\n\n---\nJob Description:\n\n{{jd}}",
 };
 
 // ─── Siva — recruiter_1 ───────────────────────────────────────────────────────
@@ -74,7 +74,7 @@ const siva: RecruiterProfile = {
   submitTemplate:
     "Hi {{recruiterName}},\n\nHope you're doing well. I came across the {{role}} opportunity and wanted to reach out.\n\nI have a strong consultant available on a C2C basis who closely matches your requirements. They are ready to start immediately and open to the right opportunity.\n\nMy consultant cc'd here will be sharing their profile and resume with you shortly.\n\nPlease feel free to reach me at your earliest convenience.\n\n{{signature}}\n\n---\nJob Description:\n\n{{jd}}",
   inquiryTemplate:
-    "Hi {{recruiterName}},\n\nHope you're doing well. I came across the {{role}} posting and wanted to check if this position is still open.\n\nCould you also share the pay rate (C2C) and any visa or work authorization restrictions?\n\nI have qualified consultants available and would love to discuss further.\n\nThank you for your time — looking forward to hearing from you.\n\n{{signature}}\n\n---\nJob Description:\n\n{{jd}}",
+    "Hi {{recruiterName}},\n\nHope you're doing well. I came across the {{role}} opportunity and wanted to reach out.\n\nI have a strong consultant available on a C2C basis who closely matches your requirements. They are ready to start immediately and open to the opportunity.\n\nPlease let me know if the position is still open and visa considerations for the same?\n\n{{signature}}\n\n---\nJob Description:\n\n{{jd}}",
 };
 
 // ─── Ashok — recruiter_4 ─────────────────────────────────────────────────────

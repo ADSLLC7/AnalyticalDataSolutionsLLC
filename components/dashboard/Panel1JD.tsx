@@ -128,10 +128,13 @@ export default function Panel1JD({
     setCcList(matched ? [matched] : []);
     setDetectedRole(role);
 
-    // Build and compile template
+    // Build and compile template — prefer user-saved version from localStorage
+    const rid = session.recruiterId;
+    const savedSubmit = localStorage.getItem(`ads_tpl_submit_${rid}`);
+    const savedInquiry = localStorage.getItem(`ads_tpl_inquiry_${rid}`);
     const tpl = mode === "submit"
-      ? (profile?.submitTemplate ?? "Hi {{recruiterName}},\n\n{{signature}}\n\n---\nJob Description:\n\n{{jd}}")
-      : (profile?.inquiryTemplate ?? "Hi {{recruiterName}},\n\n{{signature}}\n\n---\nJob Description:\n\n{{jd}}");
+      ? (savedSubmit ?? profile?.submitTemplate ?? "Hi {{recruiterName}},\n\n{{signature}}\n\n---\nJob Description:\n\n{{jd}}")
+      : (savedInquiry ?? profile?.inquiryTemplate ?? "Hi {{recruiterName}},\n\n{{signature}}\n\n---\nJob Description:\n\n{{jd}}");
 
     const compiled = composeHtmlMessage(
       tpl,
