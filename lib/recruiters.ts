@@ -14,7 +14,8 @@ export interface RecruiterProfile {
 }
 
 const NGROK_WEBHOOK =
-  "https://6cc8-2600-1700-1041-33e0-2471-329d-b9d2-6b9f.ngrok-free.app/webhook/recruiter-outreach";
+  process.env.NEXT_PUBLIC_WEBHOOK_URL ??
+  "https://4b8b-2600-1700-1041-33e0-14dd-50ea-2dd0-b19f.ngrok-free.app/webhook/recruiter-outreach";
 
 // ─── Ethan Hunt — recruiter_3 ─────────────────────────────────────────────────
 const ethan: RecruiterProfile = {
