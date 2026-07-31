@@ -190,12 +190,6 @@ export default function Panel1JD({
   const handleSend = () => {
     if (!message || !recruiterEmail) return;
 
-    const webhookUrl = session.webhookUrl;
-    if (!webhookUrl) {
-      setSendError("No webhook URL configured for this recruiter.");
-      return;
-    }
-
     const consultants = ccList.map((email) => {
       const rule = ccRules.find((r) => r.ccEmail.toLowerCase() === email.toLowerCase());
       return {
@@ -237,7 +231,7 @@ export default function Panel1JD({
 
     (async () => {
       try {
-        const res = await fetch(webhookUrl, {
+        const res = await fetch("/api/send", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),

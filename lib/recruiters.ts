@@ -13,9 +13,10 @@ export interface RecruiterProfile {
   inquiryTemplate: string;
 }
 
-const NGROK_WEBHOOK =
-  process.env.NEXT_PUBLIC_WEBHOOK_URL ??
-  "https://4b8b-2600-1700-1041-33e0-14dd-50ea-2dd0-b19f.ngrok-free.app/webhook/recruiter-outreach";
+// Webhook is proxied through /api/send (server-side) which reads JD_WEBHOOK_URL.
+// This client-side constant is kept only for profile metadata; the actual POST
+// target is always /api/send — not this URL.
+const NGROK_WEBHOOK = "";
 
 // ─── Ethan Hunt — recruiter_3 ─────────────────────────────────────────────────
 const ethan: RecruiterProfile = {
