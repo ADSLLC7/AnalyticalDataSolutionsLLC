@@ -68,9 +68,9 @@ export default function SiteFooter() {
           <div>
             <p style={{ fontWeight: 700, fontSize: '0.875rem', margin: '0 0 0.9rem' }}>Office</p>
             <p style={{ fontSize: '0.875rem', lineHeight: 1.7, color: 'var(--mk-on-deep-muted)', margin: 0 }}>
-              3300 West Dallas Pkwy, Ste 200
+              520 Central Parkway East, STE 107
               <br />
-              Plano, Texas 75093
+              Plano, TX 75074
             </p>
           </div>
         </div>

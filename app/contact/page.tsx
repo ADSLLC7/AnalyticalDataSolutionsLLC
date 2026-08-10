@@ -37,9 +37,9 @@ export default function ContactPage() {
                 <div>
                   <p className="mk-label" style={{ marginBottom: '0.2rem' }}>Office</p>
                   <p className="mk-body" style={{ margin: 0 }}>
-                    3300 West Dallas Pkwy, Ste 200
+                    520 Central Parkway East, STE 107
                     <br />
-                    Plano, Texas 75093
+                    Plano, TX 75074
                   </p>
                 </div>
               </div>
