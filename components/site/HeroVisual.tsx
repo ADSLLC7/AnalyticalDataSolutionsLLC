@@ -1,20 +1,23 @@
 const NODES = [
-  { x: 118, y: 78, label: 'Cloud & DevOps', tone: 'deep', float: '' },
-  { x: 398, y: 66, label: 'Data & AI', tone: 'accent', float: 'late' },
-  { x: 66, y: 232, label: 'Java & .NET', tone: 'accent', float: 'later' },
-  { x: 452, y: 210, label: 'Salesforce', tone: 'deep', float: '' },
-  { x: 128, y: 380, label: 'Workday', tone: 'deep', float: 'late' },
-  { x: 404, y: 372, label: 'Security', tone: 'accent', float: 'later' },
+  { x: 122, y: 84, label: 'Cloud & DevOps', tone: 'cool', float: '' },
+  { x: 396, y: 70, label: 'Data & AI', tone: 'gold', float: 'late' },
+  { x: 70, y: 234, label: 'Java & .NET', tone: 'gold', float: 'later' },
+  { x: 450, y: 212, label: 'Salesforce', tone: 'cool', float: '' },
+  { x: 132, y: 378, label: 'Workday', tone: 'cool', float: 'late' },
+  { x: 402, y: 370, label: 'Security', tone: 'gold', float: 'later' },
 ] as const;
 
 const CENTER = { x: 260, y: 226 };
 
+// Tuned for the dark navy hero: light strokes and pale text, with gold
+// carrying the emphasis. Do not reuse on a light ground without recoloring.
 export default function HeroVisual() {
-  const ink = 'oklch(0.30 0.012 28)';
-  const faint = 'oklch(0.88 0.008 28)';
-  const accent = 'oklch(0.50 0.16 28)';
-  const accentSoft = 'oklch(0.94 0.025 28)';
-  const deep = 'oklch(0.17 0.012 28)';
+  const gold = '#d9a01c';
+  const nodeFill = '#161d45';
+  const nodeStroke = 'rgba(255,255,255,0.16)';
+  const coolStroke = 'rgba(168,180,232,0.55)';
+  const textLight = '#e8ebf7';
+  const dot = 'rgba(255,255,255,0.10)';
 
   return (
     <svg
@@ -25,14 +28,19 @@ export default function HeroVisual() {
       style={{ width: '100%', height: 'auto', display: 'block' }}
     >
       <defs>
-        <pattern id="dots" width="26" height="26" patternUnits="userSpaceOnUse">
-          <circle cx="1.5" cy="1.5" r="1.5" fill={faint} />
+        <pattern id="hv-dots" width="26" height="26" patternUnits="userSpaceOnUse">
+          <circle cx="1.5" cy="1.5" r="1.5" fill={dot} />
         </pattern>
+        <radialGradient id="hv-halo" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor={gold} stopOpacity="0.30" />
+          <stop offset="100%" stopColor={gold} stopOpacity="0" />
+        </radialGradient>
       </defs>
-      <rect width="520" height="460" fill="url(#dots)" />
 
-      {/* soft accent halo behind center */}
-      <circle cx={CENTER.x} cy={CENTER.y} r="86" fill={accentSoft} opacity="0.7" />
+      <rect width="520" height="460" fill="url(#hv-dots)" />
+
+      {/* warm halo behind the core */}
+      <circle cx={CENTER.x} cy={CENTER.y} r="132" fill="url(#hv-halo)" />
 
       {/* connections */}
       <g fill="none" strokeWidth="1.6" strokeLinecap="round">
@@ -41,16 +49,36 @@ export default function HeroVisual() {
             key={n.label}
             className={`flow ${i % 3 === 0 ? 'slow' : i % 3 === 1 ? '' : 'fast'}`}
             d={`M${CENTER.x} ${CENTER.y} Q ${(CENTER.x + n.x) / 2 + (i % 2 ? 26 : -26)} ${(CENTER.y + n.y) / 2}, ${n.x} ${n.y}`}
-            stroke={n.tone === 'accent' ? accent : ink}
+            stroke={n.tone === 'gold' ? gold : coolStroke}
+            strokeOpacity={n.tone === 'gold' ? 0.85 : 0.5}
           />
         ))}
       </g>
 
       {/* center node */}
       <g className="mk-float">
-        <circle cx={CENTER.x} cy={CENTER.y} r="56" fill={deep} />
-        <circle className="pulse" cx={CENTER.x} cy={CENTER.y} r="66" fill="none" stroke={accent} strokeWidth="1.5" strokeDasharray="4 8" />
-        <text x={CENTER.x} y={CENTER.y + 7} fontSize="20" fontWeight="800" fill="oklch(0.975 0.003 28)" textAnchor="middle" fontFamily="var(--mk-font)" letterSpacing="1">
+        <circle cx={CENTER.x} cy={CENTER.y} r="58" fill="#1e2472" stroke={gold} strokeWidth="1.5" />
+        <circle
+          className="pulse"
+          cx={CENTER.x}
+          cy={CENTER.y}
+          r="72"
+          fill="none"
+          stroke={gold}
+          strokeWidth="1.5"
+          strokeDasharray="4 8"
+          strokeOpacity="0.7"
+        />
+        <text
+          x={CENTER.x}
+          y={CENTER.y + 7}
+          fontSize="20"
+          fontWeight="800"
+          fill="#ffffff"
+          textAnchor="middle"
+          fontFamily="var(--mk-font)"
+          letterSpacing="1.5"
+        >
           ADS
         </text>
       </g>
@@ -58,7 +86,7 @@ export default function HeroVisual() {
       {/* practice nodes */}
       {NODES.map((n) => {
         const w = n.label.length * 7.2 + 34;
-        const isAccent = n.tone === 'accent';
+        const isGold = n.tone === 'gold';
         return (
           <g key={n.label} className={`mk-float${n.float ? `-${n.float}` : ''}`}>
             <rect
@@ -66,18 +94,24 @@ export default function HeroVisual() {
               y={n.y - 21}
               width={w}
               height={42}
-              rx={21}
-              fill={isAccent ? accent : 'oklch(1 0 0)'}
-              stroke={isAccent ? 'none' : faint}
+              rx={10}
+              fill={nodeFill}
+              stroke={isGold ? gold : nodeStroke}
               strokeWidth="1.5"
             />
-            <circle className="pulse" cx={n.x - w / 2 + 17} cy={n.y} r="4" fill={isAccent ? 'oklch(0.985 0 0)' : accent} />
+            <circle
+              className="pulse"
+              cx={n.x - w / 2 + 17}
+              cy={n.y}
+              r="4"
+              fill={isGold ? gold : coolStroke}
+            />
             <text
               x={n.x - w / 2 + 28}
               y={n.y + 4.5}
               fontSize="13"
               fontWeight="600"
-              fill={isAccent ? 'oklch(0.985 0 0)' : ink}
+              fill={textLight}
               fontFamily="var(--mk-font)"
             >
               {n.label}

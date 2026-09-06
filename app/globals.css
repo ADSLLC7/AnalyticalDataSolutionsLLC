@@ -82,21 +82,27 @@
   }
 }
 
-/* ── Marketing surface tokens (light, terracotta accent) ──── */
+/* ── Marketing surface tokens (navy + gold, matches brand mark) ──
+   Gold is decorative only: it fails contrast as text on light grounds,
+   so it is used for rules, marks, and accents on dark — never body copy
+   or links on white. Navy carries every interactive/text role.        */
 .mk {
-  --mk-bg:            oklch(0.985 0 0);
-  --mk-surface:       oklch(0.958 0.005 28);
-  --mk-deep:          oklch(0.17 0.012 28);
-  --mk-deep-soft:     oklch(0.23 0.014 28);
-  --mk-ink:           oklch(0.19 0.012 28);
-  --mk-ink-muted:     oklch(0.40 0.014 28);
-  --mk-on-deep:       oklch(0.975 0.003 28);
-  --mk-on-deep-muted: oklch(0.74 0.012 28);
-  --mk-accent:        oklch(0.50 0.16 28);   /* terracotta */
-  --mk-accent-hover:  oklch(0.44 0.16 28);
-  --mk-accent-soft:   oklch(0.94 0.025 28);
-  --mk-border:        oklch(0.90 0.006 28);
-  --mk-border-deep:   oklch(0.30 0.012 28);
+  --mk-bg:            #ffffff;
+  --mk-surface:       #eceff7;
+  --mk-deep:          #0c1230;
+  --mk-deep-soft:     #161d45;
+  --mk-ink:           #0f1533;
+  --mk-ink-muted:     #52597a;
+  --mk-on-deep:       #f4f5fb;
+  --mk-on-deep-muted: #a8afd0;
+  --mk-accent:        #1e2472;   /* brand navy — CTAs, links */
+  --mk-accent-hover:  #2a3190;
+  --mk-accent-soft:   #eceef8;
+  --mk-gold:          #d9a01c;   /* brand gold — decorative accent */
+  --mk-gold-bright:   #f5b731;
+  --mk-gold-soft:     #fdf5e3;
+  --mk-border:        #e3e6f0;
+  --mk-border-deep:   #262d55;
   --mk-font:          var(--font-display), system-ui, sans-serif;
 
   background: var(--mk-bg);
@@ -290,6 +296,58 @@
 }
 .mk-deep-band .mk-body, .mk-deep-band .mk-lead { color: var(--mk-on-deep-muted); }
 
+/* Dark hero. Layered radial washes give the navy depth so it reads as lit
+   rather than as a flat fill. */
+.mk-hero-dark {
+  position: relative;
+  background:
+    radial-gradient(1100px 560px at 74% 44%, rgba(217, 160, 28, 0.13), transparent 62%),
+    radial-gradient(900px 500px at 8% 4%,   rgba(88, 108, 224, 0.18), transparent 60%),
+    var(--mk-deep);
+  color: var(--mk-on-deep);
+}
+/* faint dot field for texture */
+.mk-hero-dark::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.07) 1px, transparent 1px);
+  background-size: 28px 28px;
+  pointer-events: none;
+}
+.mk-hero-dark > * { position: relative; }
+.mk-hero-dark .mk-lead,
+.mk-hero-dark .mk-body { color: var(--mk-on-deep-muted); }
+.mk-hero-dark .mk-eyebrow { color: var(--mk-on-deep-muted); }
+
+/* Gold highlight needs more presence against navy than against white */
+.mk-hero-dark .mk-gold-mark {
+  background-image: linear-gradient(
+    to top,
+    rgba(217, 160, 28, 0.55) 0.20em,
+    transparent 0.20em
+  );
+}
+
+/* Outline button on a dark ground */
+.mk-hero-dark .mk-btn-ghost,
+.mk-deep-band .mk-btn-ghost {
+  color: var(--mk-on-deep);
+  border-color: rgba(255, 255, 255, 0.28);
+}
+.mk-hero-dark .mk-btn-ghost:hover,
+.mk-deep-band .mk-btn-ghost:hover {
+  border-color: rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.07);
+}
+
+/* Gold primary button, for use on dark grounds */
+.mk-btn-gold {
+  background: var(--mk-gold);
+  color: #0c1230;
+}
+.mk-btn-gold:hover { background: var(--mk-gold-bright); }
+
 /* Tag chip */
 .mk-tag {
   display: inline-block;
@@ -300,6 +358,111 @@
   background: var(--mk-accent-soft);
   border-radius: 999px;
   padding: 0.2rem 0.7rem;
+}
+
+/* ── Premium accents ──────────────────────────────────────── */
+
+/* Small uppercase section label, gold tick + navy text */
+.mk-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--mk-ink-muted);
+  margin: 0 0 1rem;
+}
+.mk-eyebrow::before {
+  content: '';
+  width: 26px;
+  height: 2px;
+  background: var(--mk-gold);
+  flex-shrink: 0;
+}
+.mk-deep-band .mk-eyebrow,
+.mk-on-deep .mk-eyebrow { color: var(--mk-on-deep-muted); }
+
+/* Gold highlight band behind a single hero word.
+   Painted as a background gradient rather than a z-index:-1 pseudo so it
+   can never slip behind an ancestor's background. */
+.mk-gold-mark {
+  white-space: nowrap;
+  background-image: linear-gradient(
+    to top,
+    rgba(217, 160, 28, 0.34) 0.20em,
+    transparent 0.20em
+  );
+}
+
+/* Service / content card */
+.mk-card {
+  background: var(--mk-bg);
+  border: 1px solid var(--mk-border);
+  border-radius: 12px;
+  padding: clamp(1.4rem, 2.4vw, 1.9rem);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.3s ease, transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+/* gold hairline that wipes in across the top on hover */
+.mk-card::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto auto 0;
+  height: 3px;
+  width: 100%;
+  background: var(--mk-gold);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.mk-card:hover {
+  border-color: #c9cee0;
+  transform: translateY(-4px);
+  box-shadow: 0 16px 38px -18px rgba(12, 18, 48, 0.28);
+}
+.mk-card:hover::before { transform: scaleX(1); }
+
+/* Icon plate inside a card */
+.mk-card-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 9px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--mk-accent-soft);
+  color: var(--mk-accent);
+  flex-shrink: 0;
+  margin-bottom: 0.35rem;
+}
+
+/* Numbered step marker */
+.mk-step-num {
+  flex-shrink: 0;
+  width: 2.6rem;
+  height: 2.6rem;
+  border-radius: 10px;
+  border: 1px solid var(--mk-border);
+  background: var(--mk-bg);
+  color: var(--mk-accent);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.95rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mk-card, .mk-card:hover { transform: none; box-shadow: none; }
+  .mk-card::before { transition: none; }
 }
 
 /* ── Reveal animation ─────────────────────────────────────── */
@@ -375,7 +538,7 @@
 }
 .mk-lift:hover {
   transform: translateY(-5px);
-  box-shadow: 0 14px 34px -14px oklch(0.3 0.03 28 / 0.28);
+  box-shadow: 0 14px 34px -14px rgba(12, 18, 48, 0.28);
 }
 
 @keyframes mk-ticker {
