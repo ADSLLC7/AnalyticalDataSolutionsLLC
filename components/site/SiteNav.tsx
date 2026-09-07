@@ -23,9 +23,10 @@ export default function SiteNav() {
 
   return (
     <header className="mk-nav">
+      <div className="mk-progress" aria-hidden />
       <div className="mk-container mk-nav-inner">
         <Link href="/" style={{ textDecoration: 'none' }} aria-label="Analytical Data Solutions home">
-          <Logo size={38} />
+          <Logo size={50} onDark />
         </Link>
 
         <nav className="mk-nav-links" aria-label="Main">
@@ -75,7 +76,7 @@ export default function SiteNav() {
               style={{
                 fontWeight: isCurrent(l.href) ? 700 : 500,
                 fontSize: '1rem',
-                color: 'var(--mk-ink)',
+                color: isCurrent(l.href) ? 'var(--mk-accent)' : 'var(--mk-ink)',
                 textDecoration: 'none',
               }}
             >

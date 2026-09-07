@@ -1,6 +1,6 @@
 import Image from 'next/image';
 
-export function LogoMark({ size = 40, onDark = false }: { size?: number; onDark?: boolean }) {
+export function LogoMark({ size = 48, onDark = false }: { size?: number; onDark?: boolean }) {
   return (
     <Image
       src={onDark ? '/brand/ads-icon-ondark.png' : '/brand/ads-icon-onlight.png'}
@@ -14,7 +14,7 @@ export function LogoMark({ size = 40, onDark = false }: { size?: number; onDark?
 }
 
 export default function Logo({
-  size = 40,
+  size = 48,
   stacked = false,
   onDark = false,
 }: {
@@ -22,24 +22,25 @@ export default function Logo({
   stacked?: boolean;
   onDark?: boolean;
 }) {
-  const ink = onDark ? 'var(--mk-on-deep)' : 'var(--mk-ink)';
-  const muted = onDark ? 'var(--mk-on-deep-muted)' : 'var(--mk-ink-muted)';
+  const ink = onDark ? 'var(--mk-ink)' : '#0F1533';
+  const muted = onDark ? 'var(--mk-accent)' : '#52597A';
+
   return (
     <span
       style={{
         display: 'inline-flex',
         alignItems: 'center',
-        gap: '0.7rem',
+        gap: size * 0.24,
         lineHeight: 1,
       }}
     >
       <LogoMark size={size} onDark={onDark} />
-      <span style={{ display: 'flex', flexDirection: 'column', gap: stacked ? 3 : 2 }}>
+      <span style={{ display: 'flex', flexDirection: 'column', gap: stacked ? 5 : 4 }}>
         <span
           style={{
             fontWeight: 800,
-            fontSize: stacked ? '1.05rem' : '1.15rem',
-            letterSpacing: '-0.025em',
+            fontSize: stacked ? '1.2rem' : '1.35rem',
+            letterSpacing: '-0.03em',
             color: ink,
             whiteSpace: 'nowrap',
           }}
@@ -48,9 +49,9 @@ export default function Logo({
         </span>
         <span
           style={{
-            fontWeight: 500,
-            fontSize: '0.62rem',
-            letterSpacing: '0.14em',
+            fontWeight: 600,
+            fontSize: '0.66rem',
+            letterSpacing: '0.17em',
             textTransform: 'uppercase',
             color: muted,
           }}

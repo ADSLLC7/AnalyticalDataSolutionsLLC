@@ -1,12 +1,9 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import {
-  Building2, Cloud, Database, GitBranch,
-  Workflow, Sparkles, Code2, Users,
-} from 'lucide-react';
+import Image from 'next/image';
 import SiteNav from '@/components/site/SiteNav';
 import SiteFooter from '@/components/site/SiteFooter';
-import HeroVisual from '@/components/site/HeroVisual';
+import StickyServices from '@/components/site/StickyServices';
 import Reveal from '@/components/site/Reveal';
 import { getOpenJobs, getPosts } from '@/lib/cms';
 import { tagColor } from '@/lib/tag-colors';
@@ -19,21 +16,28 @@ export const metadata: Metadata = {
     'IT consulting for mid-market companies and growth-stage startups: cloud infrastructure, data engineering, DevOps, system integration, and technical staffing.',
 };
 
-const SERVICES = [
-  { name: 'Enterprise Platforms', icon: Building2, desc: 'Salesforce and Workday, implemented and integrated by specialists.' },
-  { name: 'Cloud Infrastructure', icon: Cloud, desc: 'Architecture, migration, and operations across AWS, Azure, and GCP.' },
-  { name: 'Data Engineering', icon: Database, desc: 'Warehouses and pipelines sized for the volume you actually generate.' },
-  { name: 'DevOps & Platform', icon: GitBranch, desc: 'CI/CD, Kubernetes, and automation built to hand off to your team.' },
-  { name: 'System Integration', icon: Workflow, desc: 'API design and legacy modernization across the systems you run.' },
-  { name: 'AI & Machine Learning', icon: Sparkles, desc: 'RAG, LLM integration, and deployment with production guardrails.' },
-  { name: 'Application Development', icon: Code2, desc: 'Web apps and internal tools in TypeScript, .NET, and Python.' },
-  { name: 'Technical Staffing', icon: Users, desc: 'Specialists who embed in your team, screened by engineers.' },
+const MARQUEE = [
+  'Cloud Architecture', 'Data Engineering', 'Salesforce', 'Workday',
+  'DevOps & Platform', 'AI & Machine Learning', 'System Integration',
+  'Technical Staffing', 'Application Development',
 ];
 
 const STEPS = [
-  { n: '01', title: 'Scope the real problem', body: 'A working session with your team, not a sales deck. We leave with a written scope — or we tell you we are not the right fit.' },
-  { n: '02', title: 'Build with your people', body: 'Consultants embed in your standups, your repos, your tools. You see progress weekly, not at a big reveal.' },
-  { n: '03', title: 'Hand off and step back', body: 'Documentation, tests, and training close every engagement. Your team runs it; we stay reachable.' },
+  {
+    n: '01',
+    title: 'Scope the real problem',
+    body: 'A working session with your team, not a sales deck. We leave with a written scope — or we tell you we are not the right fit and point you somewhere better.',
+  },
+  {
+    n: '02',
+    title: 'Build with your people',
+    body: 'Consultants embed in your standups, your repos, your tools. You see progress weekly, not at a big reveal three months in.',
+  },
+  {
+    n: '03',
+    title: 'Hand off and step back',
+    body: 'Documentation, tests, and training close every engagement. Your team runs it; we stay reachable when something changes.',
+  },
 ];
 
 const ArrowIcon = () => (
@@ -52,32 +56,42 @@ export default async function Home() {
 
       <main>
         {/* ── Hero ─────────────────────────────────────── */}
-        <section
-          className="mk-section mk-hero-dark"
-          style={{
-            paddingBottom: 'clamp(3rem, 5.5vw, 4.5rem)',
-            minHeight: 'calc(80dvh - 70px)',
-            display: 'flex',
-            alignItems: 'center',
-          }}
-        >
-          <div className="mk-container mk-split">
-            <div>
-              <p className="mk-eyebrow hero-line">Plano, Texas · Nationwide delivery</p>
-              <h1 className="mk-h1 hero-line" style={{ fontSize: 'clamp(2.75rem, 6.5vw, 5rem)' }}>
-                The IT partner that{' '}
-                <span className="mk-gold-mark">builds it</span>{' '}
+        <section className="mk-hero">
+          <div className="mk-hero-aurora" aria-hidden />
+          <div className="mk-hero-grid" aria-hidden />
+          <Image
+            className="mk-hero-mark"
+            src="/brand/ads-icon-ondark.png"
+            alt=""
+            aria-hidden
+            width={760}
+            height={760}
+            priority
+          />
+
+          <div className="mk-container" style={{ paddingBlock: 'clamp(4rem, 9vw, 7rem)' }}>
+            <div style={{ maxWidth: '58rem' }}>
+              <p className="mk-eyebrow hero-line">Plano, Texas · Delivering nationwide</p>
+
+              <h1 className="mk-h1 hero-line">
+                The IT partner
+                <br />
+                that <span className="mk-grad">builds it</span>
+                <br />
                 with you.
               </h1>
-              <p className="mk-lead hero-line" style={{ marginTop: '1.4rem', maxWidth: '48ch' }}>
+
+              <p className="mk-lead hero-line" style={{ marginTop: '1.75rem' }}>
                 Consultants and delivery teams across the enterprise stack —
-                Salesforce, Workday, cloud, and data.
+                Salesforce, Workday, cloud, and data. One engagement, one
+                accountable team.
               </p>
+
               <div
                 className="hero-line"
-                style={{ marginTop: '2.25rem', display: 'flex', gap: '0.85rem', flexWrap: 'wrap' }}
+                style={{ marginTop: '2.5rem', display: 'flex', gap: '0.9rem', flexWrap: 'wrap' }}
               >
-                <Link href="/contact" className="mk-btn mk-btn-gold">
+                <Link href="/contact" className="mk-btn">
                   Start a project <ArrowIcon />
                 </Link>
                 <Link href="/careers" className="mk-btn-ghost">
@@ -85,98 +99,89 @@ export default async function Home() {
                 </Link>
               </div>
             </div>
-            <div className="hero-line">
-              <HeroVisual />
-            </div>
+          </div>
+
+          <div className="mk-scroll-cue" aria-hidden>
+            <span>Scroll</span>
+            <span className="bar" />
           </div>
         </section>
 
-        {/* ── Credibility band ─────────────────────────── */}
-        <section style={{ background: 'var(--mk-surface)', borderBottom: '1px solid var(--mk-border)' }}>
-          <div
-            className="mk-container"
-            style={{
-              paddingBlock: 'clamp(2.5rem, 5vw, 3.5rem)',
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))',
-              gap: 'clamp(1.75rem, 3.5vw, 3rem)',
-            }}
-          >
-            {[
-              ['One partner, not four vendors', 'Platforms, applications, cloud, and data under a single engagement.'],
-              ['Screened by engineers', 'Every consultant is vetted by people who do the work, not by keyword match.'],
-              ['Built to hand off', 'Documentation, tests, and training close every engagement. Your team owns it.'],
-            ].map(([lead, rest]) => (
-              <div key={lead}>
-                <div style={{ width: 28, height: 2, background: 'var(--mk-gold)', marginBottom: '0.9rem' }} />
-                <p style={{ margin: '0 0 0.4rem', fontSize: '1rem', fontWeight: 700, lineHeight: 1.35, color: 'var(--mk-ink)' }}>
-                  {lead}
-                </p>
-                <p style={{ margin: 0, fontSize: '0.9rem', lineHeight: 1.6, color: 'var(--mk-ink-muted)' }}>
-                  {rest}
-                </p>
+        {/* ── Capability marquee ───────────────────────── */}
+        <section className="mk-marquee" aria-label="Capabilities">
+          <div className="mk-marquee-track">
+            {[0, 1].map((dup) => (
+              <div className="mk-marquee-item" key={dup} aria-hidden={dup === 1}>
+                {MARQUEE.map((m) => (
+                  <span key={`${dup}-${m}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '3.25rem' }}>
+                    {m}
+                  </span>
+                ))}
               </div>
             ))}
           </div>
         </section>
 
-        {/* ── Services ─────────────────────────────────── */}
+        {/* ── Sticky pinned services ───────────────────── */}
         <section className="mk-section">
           <div className="mk-container">
+            <StickyServices />
+          </div>
+        </section>
+
+        {/* ── Why us ───────────────────────────────────── */}
+        <section className="mk-section" style={{ background: 'var(--mk-surface)', borderBlock: '1px solid var(--mk-border)' }}>
+          <div className="mk-container">
             <Reveal>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: '1rem', flexWrap: 'wrap', marginBottom: 'clamp(1.75rem, 3.5vw, 2.5rem)' }}>
-                <div>
-                  <p className="mk-eyebrow">What we do</p>
-                  <h2 className="mk-h2" style={{ maxWidth: '20ch' }}>
-                    Eight practices, one delivery team.
-                  </h2>
-                </div>
-                <Link href="/services" className="mk-link">
-                  All services <ArrowIcon />
-                </Link>
-              </div>
+              <p className="mk-eyebrow">Why teams pick us</p>
+              <h2 className="mk-h2" style={{ maxWidth: '20ch', marginBottom: 'clamp(2.25rem, 4vw, 3.25rem)' }}>
+                Consultants who <span className="mk-grad">hand it back.</span>
+              </h2>
             </Reveal>
             <div className="mk-grid-cards">
-              {SERVICES.map((s, i) => {
-                const Icon = s.icon;
-                return (
-                  <Reveal key={s.name} delay={i * 45}>
-                    <div className="mk-card">
-                      <span className="mk-card-icon">
-                        <Icon size={19} strokeWidth={2} aria-hidden />
-                      </span>
-                      <h3 style={{ fontWeight: 700, fontSize: '1rem', letterSpacing: '-0.015em', margin: 0 }}>
-                        {s.name}
-                      </h3>
-                      <p style={{ margin: 0, fontSize: '0.875rem', lineHeight: 1.6, color: 'var(--mk-ink-muted)' }}>
-                        {s.desc}
-                      </p>
-                    </div>
-                  </Reveal>
-                );
-              })}
+              {[
+                ['One partner, not four vendors', 'Platforms, applications, cloud, and data under a single engagement, with one team accountable for the outcome.'],
+                ['Screened by engineers', 'Every consultant is vetted by people who do the work. No keyword matching, no resume roulette.'],
+                ['Built to hand off', 'Documentation, tests, and training close every engagement. Your team owns it when we step back.'],
+              ].map(([lead, rest], i) => (
+                <Reveal key={lead} delay={i * 90}>
+                  <div className="mk-card">
+                    <div style={{ width: 30, height: 2, background: 'var(--mk-accent)', marginBottom: '1rem' }} />
+                    <h3 style={{ fontWeight: 700, fontSize: '1.1rem', letterSpacing: '-0.02em', margin: 0 }}>
+                      {lead}
+                    </h3>
+                    <p style={{ margin: 0, fontSize: '0.92rem', lineHeight: 1.7, color: 'var(--mk-ink-muted)' }}>
+                      {rest}
+                    </p>
+                  </div>
+                </Reveal>
+              ))}
             </div>
           </div>
         </section>
 
-        {/* ── How we engage ────────────────────────────── */}
-        <section className="mk-section" style={{ background: 'var(--mk-surface)' }}>
-          <div className="mk-container">
+        {/* ── Process timeline ─────────────────────────── */}
+        <section className="mk-section">
+          <div className="mk-container mk-split-narrow">
             <Reveal>
-              <p className="mk-eyebrow">How an engagement runs</p>
-              <h2 className="mk-h2" style={{ maxWidth: '24ch', marginBottom: 'clamp(2rem, 4vw, 2.75rem)' }}>
-                Scoped honestly. Built together. Handed back.
-              </h2>
+              <div>
+                <p className="mk-eyebrow">How an engagement runs</p>
+                <h2 className="mk-h2" style={{ maxWidth: '14ch' }}>
+                  Scoped honestly. Handed back.
+                </h2>
+              </div>
             </Reveal>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 'clamp(1.5rem, 3vw, 2.5rem)' }}>
+
+            <div className="mk-timeline">
+              <div className="mk-timeline-fill" aria-hidden />
               {STEPS.map((s, i) => (
-                <Reveal key={s.n} delay={i * 70}>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.9rem' }}>
-                    <span className="mk-step-num">{s.n}</span>
-                    <p style={{ fontWeight: 700, fontSize: '1.05rem', margin: 0, letterSpacing: '-0.015em' }}>
+                <Reveal key={s.n} delay={i * 90}>
+                  <div className="mk-timeline-step">
+                    <span className="mk-timeline-dot">{s.n}</span>
+                    <h3 style={{ fontWeight: 700, fontSize: '1.2rem', letterSpacing: '-0.02em', margin: '0 0 0.6rem' }}>
                       {s.title}
-                    </p>
-                    <p style={{ margin: 0, fontSize: '0.9rem', lineHeight: 1.65, color: 'var(--mk-ink-muted)' }}>
+                    </h3>
+                    <p style={{ margin: 0, fontSize: '0.95rem', lineHeight: 1.75, color: 'var(--mk-ink-muted)', maxWidth: '52ch' }}>
                       {s.body}
                     </p>
                   </div>
@@ -187,61 +192,65 @@ export default async function Home() {
         </section>
 
         {/* ── Dual audience ────────────────────────────── */}
-        <section className="mk-section">
+        <section className="mk-section" style={{ paddingTop: 0 }}>
           <div className="mk-container mk-grid-cards">
             <Reveal>
               <div
                 className="mk-lift"
                 style={{
-                  background: 'var(--mk-deep)',
-                  color: 'var(--mk-on-deep)',
-                  borderRadius: '14px',
-                  padding: 'clamp(1.85rem, 3.5vw, 2.85rem)',
+                  position: 'relative',
+                  overflow: 'hidden',
+                  borderRadius: 18,
+                  padding: 'clamp(2rem, 4vw, 3rem)',
                   height: '100%',
                   display: 'flex',
                   flexDirection: 'column',
+                  background:
+                    'radial-gradient(28rem 20rem at 85% 0%, rgba(240,180,41,0.20), transparent 66%), var(--mk-surface-2)',
+                  border: '1px solid rgba(240,180,41,0.28)',
                 }}
               >
-                <div style={{ width: 28, height: 2, background: 'var(--mk-gold)', marginBottom: '1.1rem' }} />
-                <h3 className="mk-h3" style={{ fontSize: 'clamp(1.35rem, 2.2vw, 1.7rem)' }}>
+                <div style={{ width: 30, height: 2, background: 'var(--mk-accent)', marginBottom: '1.2rem' }} />
+                <h3 className="mk-h3" style={{ fontSize: 'clamp(1.45rem, 2.4vw, 1.9rem)' }}>
                   Need a team that ships?
                 </h3>
-                <p style={{ color: 'var(--mk-on-deep-muted)', lineHeight: 1.7, fontSize: '0.95rem', margin: '0.9rem 0 1.75rem', maxWidth: '42ch' }}>
+                <p style={{ color: 'var(--mk-ink-muted)', lineHeight: 1.7, fontSize: '0.975rem', margin: '1rem 0 2rem', maxWidth: '40ch' }}>
                   Scoped engagements or embedded engineers. Tell us where the
                   project stands and we&apos;ll tell you honestly whether
                   we&apos;re the right fit.
                 </p>
                 <div style={{ marginTop: 'auto' }}>
-                  <Link href="/contact" className="mk-btn mk-btn-gold">
+                  <Link href="/contact" className="mk-btn">
                     Talk to us <ArrowIcon />
                   </Link>
                 </div>
               </div>
             </Reveal>
-            <Reveal delay={80}>
+
+            <Reveal delay={90}>
               <div
                 className="mk-lift"
                 style={{
-                  background: 'var(--mk-surface)',
-                  border: '1px solid var(--mk-border)',
-                  borderRadius: '14px',
-                  padding: 'clamp(1.85rem, 3.5vw, 2.85rem)',
+                  borderRadius: 18,
+                  padding: 'clamp(2rem, 4vw, 3rem)',
                   height: '100%',
                   display: 'flex',
                   flexDirection: 'column',
+                  background: 'var(--mk-surface)',
+                  border: '1px solid var(--mk-border)',
                 }}
               >
-                <div style={{ width: 28, height: 2, background: 'var(--mk-accent)', marginBottom: '1.1rem' }} />
-                <h3 className="mk-h3" style={{ fontSize: 'clamp(1.35rem, 2.2vw, 1.7rem)' }}>
+                <div style={{ width: 30, height: 2, background: 'var(--mk-border-strong)', marginBottom: '1.2rem' }} />
+                <h3 className="mk-h3" style={{ fontSize: 'clamp(1.45rem, 2.4vw, 1.9rem)' }}>
                   Looking for your next role?
                 </h3>
-                <p className="mk-body" style={{ margin: '0.9rem 0 1.75rem', maxWidth: '42ch' }}>
+                <p style={{ color: 'var(--mk-ink-muted)', lineHeight: 1.7, fontSize: '0.975rem', margin: '1rem 0 2rem', maxWidth: '40ch' }}>
                   {openJobs.length} open position{openJobs.length === 1 ? '' : 's'} across
                   cloud, data, DevOps, and recruiting. Real projects and direct
                   mentorship.
                 </p>
                 <div style={{ marginTop: 'auto' }}>
-                  <Link href="/careers" className="mk-btn-ghost" style={{ background: '#ffffff' }}>
+                  <Link href="/careers" className="mk-btn-ghost">
                     View open roles <ArrowIcon />
                   </Link>
                 </div>
@@ -254,7 +263,7 @@ export default async function Home() {
         <section className="mk-section" style={{ paddingTop: 0 }}>
           <div className="mk-container">
             <Reveal>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: '1rem', flexWrap: 'wrap', marginBottom: 'clamp(1.75rem, 3.5vw, 2.5rem)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: '1rem', flexWrap: 'wrap', marginBottom: 'clamp(2rem, 4vw, 2.75rem)' }}>
                 <div>
                   <p className="mk-eyebrow">From the team</p>
                   <h2 className="mk-h2">Latest thinking</h2>
@@ -266,20 +275,20 @@ export default async function Home() {
             </Reveal>
             <div className="mk-grid-cards">
               {latestPosts.map((p, i) => (
-                <Reveal key={p.slug} delay={i * 70}>
+                <Reveal key={p.slug} delay={i * 90}>
                   <Link
                     href={`/blog/${p.slug}`}
                     style={{ textDecoration: 'none', color: 'inherit', display: 'block', height: '100%' }}
                   >
                     <article className="mk-card">
-                      <span className="mk-tag" style={{ background: tagColor(p.tag).bg, color: tagColor(p.tag).fg, alignSelf: 'flex-start' }}>
+                      <span className="mk-tag" style={{ background: tagColor(p.tag).bg, color: tagColor(p.tag).fg, alignSelf: 'flex-start', border: 'none' }}>
                         {p.tag}
                       </span>
                       <h3 className="mk-h3" style={{ textWrap: 'balance' }}>{p.title}</h3>
-                      <p style={{ fontSize: '0.875rem', lineHeight: 1.6, color: 'var(--mk-ink-muted)', margin: 0 }}>
+                      <p style={{ fontSize: '0.9rem', lineHeight: 1.65, color: 'var(--mk-ink-muted)', margin: 0 }}>
                         {p.excerpt}
                       </p>
-                      <p style={{ marginTop: 'auto', marginBottom: 0, paddingTop: '0.5rem', fontSize: '0.78rem', color: 'var(--mk-ink-muted)', fontWeight: 500 }}>
+                      <p style={{ marginTop: 'auto', marginBottom: 0, paddingTop: '0.6rem', fontSize: '0.78rem', color: 'var(--mk-ink-faint)', fontWeight: 500 }}>
                         {new Date(p.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
                         {' · '}{p.readMinutes} min read
                       </p>
@@ -292,18 +301,18 @@ export default async function Home() {
         </section>
 
         {/* ── Closing CTA ──────────────────────────────── */}
-        <section className="mk-deep-band">
-          <div className="mk-container" style={{ paddingBlock: 'clamp(3.5rem, 7vw, 5.5rem)', textAlign: 'center' }}>
+        <section style={{ position: 'relative', overflow: 'hidden', borderTop: '1px solid var(--mk-border)' }}>
+          <div className="mk-hero-aurora" aria-hidden style={{ opacity: 0.75 }} />
+          <div className="mk-container" style={{ paddingBlock: 'clamp(4.5rem, 9vw, 7.5rem)', textAlign: 'center', position: 'relative' }}>
             <Reveal>
-              <div style={{ width: 32, height: 2, background: 'var(--mk-gold)', margin: '0 auto 1.5rem' }} />
-              <h2 className="mk-h2" style={{ marginBottom: '1rem', maxWidth: '18ch', marginInline: 'auto' }}>
-                Tell us what you&apos;re building.
+              <h2 className="mk-h2" style={{ maxWidth: '16ch', marginInline: 'auto', fontSize: 'clamp(2.25rem, 5.5vw, 4.25rem)' }}>
+                Tell us what <span className="mk-grad">you&apos;re building.</span>
               </h2>
-              <p style={{ color: 'var(--mk-on-deep-muted)', fontSize: '1.05rem', lineHeight: 1.65, maxWidth: '52ch', margin: '0 auto 2.25rem' }}>
+              <p className="mk-lead" style={{ margin: '1.5rem auto 2.5rem', maxWidth: '48ch' }}>
                 A 30-minute call is enough to tell you whether we can help, what
                 it would take, and what it would cost.
               </p>
-              <Link href="/contact" className="mk-btn mk-btn-gold">
+              <Link href="/contact" className="mk-btn">
                 Contact us <ArrowIcon />
               </Link>
             </Reveal>
