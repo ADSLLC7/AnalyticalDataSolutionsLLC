@@ -82,10 +82,11 @@
   }
 }
 
-/* ── Marketing surface tokens (near-black + gold) ───────────
-   Dark-first system. Gold clears 10:1 on the near-black ground, so
-   unlike on a light ground it is safe for text, links, and buttons —
-   it carries the brand everywhere rather than being decorative only. */
+/* ── Marketing surface tokens (near-black + brand crimson) ──
+   Dark-first system built from the logo's own colours, sampled from the
+   mark: crimson #B23A2F carries the letterform, antique gold #C6A25A is
+   the diamond. Crimson leads; gold is secondary, used in roughly the
+   proportion it holds in the mark. */
 .mk {
   --mk-bg:            #0A0A0C;
   --mk-surface:       #141417;
@@ -93,11 +94,23 @@
   --mk-ink:           #FAFAF8;
   --mk-ink-muted:     #A1A1AA;
   --mk-ink-faint:     #71717A;
-  --mk-accent:        #F0B429;
-  --mk-accent-hover:  #FFC94D;
-  --mk-accent-deep:   #C98A10;
-  --mk-glow:          #FF8A3D;
-  --mk-accent-soft:   rgba(240, 180, 41, 0.12);
+
+  /* Brand crimson, sampled from the mark. It measures 3.3:1 on the ground —
+     fine for fills, buttons, rules and large display, but it FAILS AA for
+     body text, so a lightened tint carries every text role instead. Never
+     use --mk-accent for small type. */
+  --mk-accent:        #B23A2F;
+  --mk-accent-text:   #D4564A;   /* 4.9:1 — links, labels, small type */
+  --mk-accent-hover:  #C6473A;
+  --mk-accent-deep:   #8E2C23;
+  --mk-on-accent:     #FFF6F4;   /* text sitting on a crimson fill */
+  --mk-accent-soft:   rgba(178, 58, 47, 0.15);
+
+  /* Logo gold, secondary — 61px of the mark, so used sparingly */
+  --mk-gold:          #C6A25A;
+  --mk-gold-bright:   #DDBB77;
+  --mk-glow:          #C6A25A;
+
   --mk-border:        rgba(255, 255, 255, 0.10);
   --mk-border-strong: rgba(255, 255, 255, 0.22);
   /* legacy aliases kept so other pages keep resolving */
@@ -105,8 +118,6 @@
   --mk-deep-soft:     #141417;
   --mk-on-deep:       #FAFAF8;
   --mk-on-deep-muted: #A1A1AA;
-  --mk-gold:          #F0B429;
-  --mk-gold-bright:   #FFC94D;
   --mk-border-deep:   rgba(255, 255, 255, 0.14);
   --mk-font:          var(--font-display), system-ui, sans-serif;
 
@@ -169,9 +180,10 @@
   max-width: 65ch;
 }
 
-/* Gold gradient applied to a headline fragment */
+/* Crimson-to-gold gradient on a headline fragment. Uses the lighter
+   crimson tint so the darkest stop still clears large-text contrast. */
 .mk-grad {
-  background: linear-gradient(100deg, var(--mk-accent) 0%, var(--mk-glow) 55%, var(--mk-accent) 100%);
+  background: linear-gradient(100deg, var(--mk-accent-text) 0%, var(--mk-gold) 55%, var(--mk-accent-text) 100%);
   background-size: 220% 100%;
   -webkit-background-clip: text;
   background-clip: text;
@@ -183,11 +195,11 @@
   50%      { background-position: 100% 50%; }
 }
 
-/* Legacy: gold highlight behind a word */
+/* Legacy: accent highlight band behind a word */
 .mk-gold-mark {
   white-space: nowrap;
   background-image: linear-gradient(
-    to top, rgba(240, 180, 41, 0.30) 0.20em, transparent 0.20em
+    to top, rgba(178, 58, 47, 0.30) 0.20em, transparent 0.20em
   );
 }
 
@@ -200,7 +212,7 @@
   padding: 0.85rem 1.75rem;
   border-radius: 999px;
   background: var(--mk-accent);
-  color: #0A0A0C;
+  color: var(--mk-on-accent);
   font-family: var(--mk-font);
   font-weight: 700;
   font-size: 0.9375rem;
@@ -214,10 +226,10 @@
 .mk-btn:hover {
   background: var(--mk-accent-hover);
   transform: translateY(-2px);
-  box-shadow: 0 10px 34px -8px rgba(240, 180, 41, 0.55);
+  box-shadow: 0 10px 34px -8px rgba(178, 58, 47, 0.55);
 }
 .mk-btn:disabled { opacity: 0.5; cursor: default; transform: none; box-shadow: none; }
-.mk-btn-gold { background: var(--mk-accent); color: #0A0A0C; }
+.mk-btn-gold { background: var(--mk-accent); color: var(--mk-on-accent); }
 
 .mk-btn-ghost {
   display: inline-flex;
@@ -237,12 +249,12 @@
 }
 .mk-btn-ghost:hover {
   border-color: var(--mk-accent);
-  background: rgba(240, 180, 41, 0.08);
+  background: rgba(178, 58, 47, 0.08);
   transform: translateY(-2px);
 }
 
 .mk-link {
-  color: var(--mk-accent);
+  color: var(--mk-accent-text);
   font-weight: 600;
   text-decoration: none;
   display: inline-flex;
@@ -353,10 +365,12 @@
   inset: -25%;
   z-index: -2;
   pointer-events: none;
+  /* crimson leads, antique gold as the smaller secondary wash — the same
+     proportion the two colours hold in the mark */
   background:
-    radial-gradient(46rem 30rem at 68% 34%, rgba(240, 180, 41, 0.20), transparent 62%),
-    radial-gradient(38rem 26rem at 18% 74%, rgba(255, 138, 61, 0.14), transparent 64%),
-    radial-gradient(30rem 22rem at 88% 82%, rgba(240, 180, 41, 0.10), transparent 66%);
+    radial-gradient(46rem 30rem at 68% 34%, rgba(178, 58, 47, 0.26), transparent 62%),
+    radial-gradient(38rem 26rem at 18% 74%, rgba(198, 162, 90, 0.11), transparent 64%),
+    radial-gradient(30rem 22rem at 88% 82%, rgba(178, 58, 47, 0.12), transparent 66%);
   animation: mk-aurora 22s ease-in-out infinite;
   will-change: transform;
 }
@@ -435,7 +449,7 @@
   font-weight: 700;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: var(--mk-accent);
+  color: var(--mk-accent-text);
   margin: 0 0 1.15rem;
 }
 .mk-eyebrow::before {
@@ -477,7 +491,7 @@
   white-space: nowrap;
   transition: color 0.25s ease;
 }
-.mk-marquee-item:hover { color: var(--mk-accent); }
+.mk-marquee-item:hover { color: var(--mk-accent-text); }
 .mk-marquee-item::after {
   content: '';
   width: 6px;
@@ -537,7 +551,7 @@
   transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .mk-pin-index-item[data-active='true'] {
-  color: var(--mk-accent);
+  color: var(--mk-accent-text);
   padding-left: 1.5rem;
 }
 .mk-pin-index-item[data-active='true']::before { transform: scaleY(1); }
@@ -558,12 +572,12 @@
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: radial-gradient(24rem 16rem at 88% 0%, rgba(240, 180, 41, 0.13), transparent 68%);
+  background: radial-gradient(24rem 16rem at 88% 0%, rgba(178, 58, 47, 0.13), transparent 68%);
   opacity: 0;
   transition: opacity 0.45s ease;
 }
 .mk-pin-panel[data-active='true'] {
-  border-color: rgba(240, 180, 41, 0.42);
+  border-color: rgba(178, 58, 47, 0.42);
   background: var(--mk-surface-2);
   transform: translateY(-3px);
 }
@@ -573,7 +587,7 @@
   font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.18em;
-  color: var(--mk-accent);
+  color: var(--mk-accent-text);
   margin: 0 0 0.85rem;
 }
 
@@ -597,12 +611,12 @@
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: radial-gradient(20rem 14rem at 50% -10%, rgba(240, 180, 41, 0.16), transparent 70%);
+  background: radial-gradient(20rem 14rem at 50% -10%, rgba(178, 58, 47, 0.16), transparent 70%);
   opacity: 0;
   transition: opacity 0.4s ease;
 }
 .mk-card:hover {
-  border-color: rgba(240, 180, 41, 0.4);
+  border-color: rgba(178, 58, 47, 0.4);
   background: var(--mk-surface-2);
   transform: translateY(-6px);
 }
@@ -617,8 +631,8 @@
   align-items: center;
   justify-content: center;
   background: var(--mk-accent-soft);
-  color: var(--mk-accent);
-  border: 1px solid rgba(240, 180, 41, 0.24);
+  color: var(--mk-accent-text);
+  border: 1px solid rgba(178, 58, 47, 0.24);
   flex-shrink: 0;
   margin-bottom: 0.4rem;
 }
@@ -666,7 +680,7 @@
   border-radius: 999px;
   background: var(--mk-surface-2);
   border: 1px solid var(--mk-border-strong);
-  color: var(--mk-accent);
+  color: var(--mk-accent-text);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -686,7 +700,7 @@
   border-radius: 12px;
   border: 1px solid var(--mk-border-strong);
   background: var(--mk-surface-2);
-  color: var(--mk-accent);
+  color: var(--mk-accent-text);
   display: inline-flex; align-items: center; justify-content: center;
   font-weight: 800; font-size: 0.95rem;
 }
@@ -713,7 +727,7 @@
 .mk-input:focus-visible, .mk-textarea:focus-visible, .mk-select:focus-visible {
   outline: none;
   border-color: var(--mk-accent);
-  box-shadow: 0 0 0 3px rgba(240, 180, 41, 0.2);
+  box-shadow: 0 0 0 3px rgba(178, 58, 47, 0.2);
 }
 .mk-input::placeholder, .mk-textarea::placeholder { color: var(--mk-ink-faint); }
 .mk-textarea { min-height: 130px; resize: vertical; }
@@ -728,9 +742,9 @@
   font-weight: 600;
   font-size: 0.72rem;
   letter-spacing: 0.03em;
-  color: var(--mk-accent);
+  color: var(--mk-accent-text);
   background: var(--mk-accent-soft);
-  border: 1px solid rgba(240, 180, 41, 0.24);
+  border: 1px solid rgba(178, 58, 47, 0.24);
   border-radius: 999px;
   padding: 0.22rem 0.7rem;
 }

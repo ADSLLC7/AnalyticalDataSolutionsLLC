@@ -206,8 +206,8 @@ export default async function Home() {
                   display: 'flex',
                   flexDirection: 'column',
                   background:
-                    'radial-gradient(28rem 20rem at 85% 0%, rgba(240,180,41,0.20), transparent 66%), var(--mk-surface-2)',
-                  border: '1px solid rgba(240,180,41,0.28)',
+                    'radial-gradient(28rem 20rem at 85% 0%, rgba(178,58,47,0.24), transparent 66%), var(--mk-surface-2)',
+                  border: '1px solid rgba(178,58,47,0.34)',
                 }}
               >
                 <div style={{ width: 30, height: 2, background: 'var(--mk-accent)', marginBottom: '1.2rem' }} />
