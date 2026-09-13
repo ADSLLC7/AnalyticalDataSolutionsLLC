@@ -14,6 +14,7 @@ import { UserSession } from "@/lib/session";
 import { getRecruiterByEmail } from "@/lib/recruiters";
 import { extractRole, extractName, extractEmail } from "@/lib/jd-extract";
 import { composeHtmlMessage } from "@/lib/email-html";
+import { matchDefaultConsultant } from "@/lib/default-consultant-routing";
 import type { CcRule } from "@/lib/cms";
 
 interface Panel1Props {
@@ -92,13 +93,17 @@ export default function Panel1JD({
 
   // First rule whose comma-separated keywords appear in the JD text or the
   // detected role wins; recruiters manage this list themselves (Panel2).
+  // Falls back to the shared default routing table (lib/default-consultant-
+  // routing.ts) when the recruiter has no rule of their own that matches —
+  // that's how a role like Business Analyst gets a consultant even before
+  // any recruiter has configured one.
   function matchCcRule(text: string): string | null {
     const lower = text.toLowerCase();
     for (const rule of ccRules) {
       const terms = rule.keywords.split(",").map((k) => k.trim().toLowerCase()).filter(Boolean);
       if (terms.some((t) => lower.includes(t))) return rule.ccEmail;
     }
-    return null;
+    return matchDefaultConsultant(text);
   }
 
   const extractFields = async () => {
@@ -187,8 +192,15 @@ export default function Panel1JD({
   // right away, and let the network call resolve in the background —
   // success or failure lands in the Activity Log and History whenever it
   // actually finishes.
+  // Submit Consultant mode no longer emails the vendor at all — the matched
+  // consultant(s) are the only recipient. Inquiry Only mode is unchanged:
+  // its entire purpose is asking the vendor whether the role is still open,
+  // so it still requires and targets recruiterEmail.
+  const isSubmit = mode === "submit";
+  const canSend = isSubmit ? ccList.length > 0 : !!recruiterEmail;
+
   const handleSend = () => {
-    if (!message || !recruiterEmail) return;
+    if (!message || !canSend) return;
 
     const consultants = ccList.map((email) => {
       const rule = ccRules.find((r) => r.ccEmail.toLowerCase() === email.toLowerCase());
@@ -200,16 +212,26 @@ export default function Panel1JD({
       };
     });
 
-    const snapshot = { recruiterEmail, subject, detectedRole, message, jd, mode, ccList };
+    // The address this send actually goes to — a consultant in Submit mode,
+    // the vendor in Inquiry mode.
+    const primaryTo = isSubmit ? ccList.join(",") : recruiterEmail;
+
+    const snapshot = { primaryTo, subject, detectedRole, message, jd, mode, ccList };
     const payload = {
-      email: recruiterEmail,
-      name: recruiterName,
+      email: primaryTo,
+      // Vendor identity is kept only as reference metadata in Submit mode —
+      // it is never the send target — so n8n can still use it for context
+      // (e.g. mentioning who posted the role) without emailing them.
+      name: isSubmit ? null : recruiterName,
+      vendor_name: recruiterName || null,
+      vendor_email: recruiterEmail || null,
+      send_to_vendor: !isSubmit,
       role: detectedRole,
       subject,
       message,
       jd,
       mode,
-      cc: ccList.join(","),
+      cc: isSubmit ? "" : ccList.join(","),
       recruiter_id: session.recruiterId,
       consultants,
     };
@@ -247,14 +269,14 @@ export default function Panel1JD({
         }
         onLog({
           action: "Email sent",
-          detail: `To: ${snapshot.recruiterEmail} · Subject: ${snapshot.subject}`,
+          detail: `To: ${snapshot.primaryTo} · Subject: ${snapshot.subject}`,
           type: "send",
         });
 
         const record: SentRecord = {
           subject: snapshot.subject,
           role: snapshot.detectedRole,
-          to: snapshot.recruiterEmail,
+          to: snapshot.primaryTo,
           sentAt: new Date().toISOString(),
         };
         setHistory((prev) => [record, ...prev].slice(0, 20));
@@ -279,8 +301,8 @@ export default function Panel1JD({
           : err instanceof Error
             ? err.message
             : "Unknown error";
-        setSendError(`Send to ${snapshot.recruiterEmail} failed: ${msg}`);
-        onLog({ action: "Send failed", detail: `${snapshot.recruiterEmail}: ${msg}`, type: "info" });
+        setSendError(`Send to ${snapshot.primaryTo} failed: ${msg}`);
+        onLog({ action: "Send failed", detail: `${snapshot.primaryTo}: ${msg}`, type: "info" });
       } finally {
         setPendingSends((n) => Math.max(0, n - 1));
       }
@@ -406,7 +428,9 @@ export default function Panel1JD({
         {/* CC chips */}
         {ccList.length > 0 && (
           <div>
-            <div className="section-label mb-1.5">Auto-detected CC</div>
+            <div className="section-label mb-1.5">
+              {isSubmit ? "Sends To (Consultant)" : "Auto-detected CC"}
+            </div>
             <div className="flex flex-wrap gap-1.5">
               {ccList.map((e) => (
                 <span key={e} className="chip group">
@@ -417,12 +441,25 @@ export default function Panel1JD({
                 </span>
               ))}
             </div>
+            {isSubmit && (
+              <p className="text-[10px] text-muted-foreground mt-1">
+                This email goes only to the consultant(s) above — the vendor below is not emailed.
+              </p>
+            )}
+          </div>
+        )}
+
+        {isSubmit && ccList.length === 0 && (
+          <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900 rounded-md px-3 py-2 text-[11px] text-amber-800 dark:text-amber-300">
+            No consultant matched this role yet. Add one under CC Routing, or add a recipient below — Send is disabled until there&apos;s at least one.
           </div>
         )}
 
         {/* Recruiter details */}
         <div>
-          <div className="section-label mb-1.5">Recruiter Details</div>
+          <div className="section-label mb-1.5">
+            {isSubmit ? "Vendor Details (reference only — not emailed)" : "Recruiter Details"}
+          </div>
           <div className="grid grid-cols-2 gap-2">
             <div className="space-y-1">
               <Label className="text-[10px] text-muted-foreground">Name</Label>
@@ -466,13 +503,15 @@ export default function Panel1JD({
 
         {/* Custom CC input */}
         <div>
-          <div className="section-label mb-1.5">Add CC Recipient</div>
+          <div className="section-label mb-1.5">
+            {isSubmit ? "Add Consultant Recipient" : "Add CC Recipient"}
+          </div>
           <div className="flex gap-1.5">
             <Input
               value={ccInput}
               onChange={(e) => setCcInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && addCc()}
-              placeholder="cc@company.com"
+              placeholder={isSubmit ? "consultant@example.com" : "cc@company.com"}
               className="h-7 text-[12px] flex-1"
             />
             <Button
@@ -570,7 +609,7 @@ export default function Panel1JD({
             size="sm"
             className="h-7 text-[11px] px-3 gap-1.5 bg-[var(--navy)] hover:bg-[var(--navy-light)] text-white"
             onClick={handleSend}
-            disabled={!message || !recruiterEmail}
+            disabled={!message || !canSend}
           >
             <Send className="w-3 h-3" />
             Send
@@ -599,8 +638,19 @@ export default function Panel1JD({
               </button>
             </div>
             <div className="flex-1 overflow-y-auto panel-scroll p-4 space-y-3">
-              <PreviewField label="To" value={recruiterEmail || "—"} />
-              <PreviewField label="CC" value={ccList.join(", ") || "—"} />
+              {isSubmit ? (
+                <>
+                  <PreviewField label="To (consultant — vendor is not emailed)" value={ccList.join(", ") || "—"} />
+                  {recruiterEmail && (
+                    <PreviewField label="Vendor (reference only)" value={recruiterEmail} />
+                  )}
+                </>
+              ) : (
+                <>
+                  <PreviewField label="To" value={recruiterEmail || "—"} />
+                  <PreviewField label="CC" value={ccList.join(", ") || "—"} />
+                </>
+              )}
               <PreviewField label="Subject" value={subject || "—"} />
               <div>
                 <div className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-1">
@@ -627,7 +677,7 @@ export default function Panel1JD({
                 size="sm"
                 className="h-8 text-[12px] bg-[var(--navy)] hover:bg-[var(--navy-light)] text-white gap-1.5"
                 onClick={() => { setShowPreview(false); handleSend(); }}
-                disabled={!message || !recruiterEmail}
+                disabled={!message || !canSend}
               >
                 <Send className="w-3 h-3" />
                 Send Now
